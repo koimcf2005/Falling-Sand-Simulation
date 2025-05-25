@@ -45,7 +45,7 @@ make
 ### Running
 
 ```bash
-./falling_sand_sim
+./run
 ```
 
 ## Technical Details
@@ -69,24 +69,8 @@ The simulation is built around three main components:
    - Bottom-up update order for proper gravity simulation
    - Randomized column updates to prevent bias
 
-### Performance Optimizations
-
-- Hardware-accelerated rendering using SDL textures
-- Efficient pixel buffer updates
-- Batch rendering operations
-- Skip redundant element updates
-- Memory management optimizations for element creation/deletion
-
 ## Dependencies
 
 - SDL2 (Simple DirectMedia Layer 2.0)
 - C++ Standard Library
 - Standard Template Library (STL)
-
-## License
-
-[Your chosen license]
-
-## Contributing
-
-[Your contribution guidelines]
