@@ -1,0 +1,5 @@
+.vscode
+SDL2.dll
+src/include/
+src/lib
+build/

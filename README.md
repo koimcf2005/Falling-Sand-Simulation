@@ -28,8 +28,31 @@ A cellular automata-based particle simulation built with C++ and SDL2. This proj
 ### Prerequisites
 
 - C++17 compatible compiler
-- SDL2 development libraries
+- SDL2 and SDL2_image development libraries
 - Make
+
+### Installing SDL2 and SDL2_image
+
+#### On Ubuntu/Debian:
+
+```bash
+sudo apt update
+sudo apt install libsdl2-dev libsdl2-image-dev
+```
+
+#### On macOS (using Homebrew):
+
+```bash
+brew install sdl2 sdl2_image
+```
+
+#### On Windows:
+
+1. Download the SDL2 and SDL2_image development libraries from:
+   - [SDL2](https://www.libsdl.org/download-2.0.php)
+   - [SDL2_image](https://www.libsdl.org/projects/SDL_image/)
+2. Extract the files and follow the SDL2/SDL2_image setup instructions for your compiler/IDE (e.g., Visual Studio, MinGW).
+3. Ensure that the include and lib paths for both SDL2 and SDL2_image are correctly referenced in your build setup.
 
 ### Build Instructions
 
@@ -72,5 +95,6 @@ The simulation is built around three main components:
 ## Dependencies
 
 - SDL2 (Simple DirectMedia Layer 2.0)
+- SDL2_image (for image loading)
 - C++ Standard Library
 - Standard Template Library (STL)
