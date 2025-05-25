@@ -45,7 +45,7 @@ make
 ### Running
 
 ```bash
-./run
+./build/run
 ```
 
 ## Technical Details
