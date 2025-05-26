@@ -7,7 +7,11 @@
 enum ElementType {
     EMPTY,
     SAND,
-    STONE,
+	DIRT,
+	COAL,
+	STONE,
+	WOOD,
+	WATER,
 	SMOKE
 };
 

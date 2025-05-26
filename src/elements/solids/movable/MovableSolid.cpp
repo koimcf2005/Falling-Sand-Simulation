@@ -1,6 +1,8 @@
 #include "MovableSolid.hpp"
 #include "CellularMatrix.hpp"
 #include "elements/gases/Gas.hpp"
+#include "elements/liquids/Liquid.hpp"
+
 
 //-------------------------------------------
 // Update Behavior
@@ -16,6 +18,7 @@ void MovableSolid::update(CellularMatrix& matrix, int x, int y) {
 		if (!matrix.isInBounds(posX, posY)) return false;
 		if (matrix.isEmpty(posX, posY)) return true;
 		if (Element::isInstanceOf<Gas>(matrix.getElement(posX, posY))) return true;
+		if (Element::isInstanceOf<Liquid>(matrix.getElement(posX, posY))) return true;
 		return false;
 	};
 
@@ -28,6 +31,9 @@ void MovableSolid::update(CellularMatrix& matrix, int x, int y) {
 
 	// If the cell below is empty or gas, particle is considered moving
 	if (canReplaceElement(x, y + 1)) isMoving = true;
+	if (matrix.isInBounds(x, y + 1) && Element::isInstanceOf<Liquid>(matrix.getElement(x, y + 1))) {
+		velocity_y = 0.5f;
+	}
 
 	if (isMoving) {
 		// Apply gravity and accumulate vertical velocity
@@ -56,19 +62,31 @@ void MovableSolid::update(CellularMatrix& matrix, int x, int y) {
 				// If falling fast enough, set horizontal velocity
 				if (velocity_y >= 1.0f / absorption) {
 					velocity_x = velocity_y * absorption * dir;
-				} else {
-					velocity_x *= friction;
 				}
 				// Try to slide diagonally (sand piling)
 				if (canReplaceElement(x + dir, y + 1)) {
 					swap(x + dir, y + 1);
+					velocity_x += 0.5f * dir;
 				}
 				else if (canReplaceElement(x - dir, y + 1)) {
 					swap(x - dir, y + 1);
+					velocity_x += 0.5f * dir;
 				}
-				// If can't slide diagonally, try to move horizontally by velocity_x
-				else if (canReplaceElement(x + static_cast<int>(velocity_x), y)) {
-					swap(x + static_cast<int>(velocity_x), y);
+				// Try to move horizontally as far as possible using velocity_x
+				int horiz_dir = (velocity_x > 0) ? 1 : (velocity_x < 0) ? -1 : 0;
+				int max_steps = std::abs(static_cast<int>(velocity_x));
+				int last_valid_x = x;
+				for (int i = 1; i <= max_steps; ++i) {
+					int target_x = x + i * horiz_dir;
+					if (canReplaceElement(target_x, y)) {
+						last_valid_x = target_x;
+					} else {
+						break;
+					}
+				}
+				if (last_valid_x != x) {
+					swap(last_valid_x, y);
+					velocity_x *= friction;
 				}
 				// Reset vertical velocity/accumulation if blocked
 				velocity_y = 1.0f;

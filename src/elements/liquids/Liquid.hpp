@@ -1,18 +1,18 @@
 // -------------------------------------------
-// MovableSolid.hpp
+// Liquid.hpp
 // -------------------------------------------
-// Base class for all movable solid elements (e.g., sand, powder).
+// Base class for all liquid elements (e.g., water, lava).
 // Provides velocity and movement accumulation for smooth simulation.
 // Does not implement update logic directly; intended for inheritance.
 // -------------------------------------------
-#ifndef MOVABLE_SOLID_HPP
-#define MOVABLE_SOLID_HPP
+#ifndef LIQUID_HPP
+#define LIQUID_HPP
 
-#include "Solid.hpp"
+#include "Element.hpp"
 
-class MovableSolid : public Solid {
+class Liquid : public Element {
 	public:
-		MovableSolid(ElementType type, int x, int y) : Solid(type, x, y) {}
+		Liquid(ElementType type, int x, int y) : Element(type, x, y) {}
 		// Update function to be implemented by derived classes
 		void update(CellularMatrix& matrix, int x, int y) override;
 		
@@ -25,12 +25,8 @@ class MovableSolid : public Solid {
 		// Accumulated sub-cell movement for smooth simulation
 		float accumulated_y = 0.0f;
 		float accumulated_x = 0.0f;
-		// Friction
-		float friction = 0.5f;
-		// Absorption
-		float absorption = 0.5f;
-		// Resistance to inertia, affecting how quickly the solid stops
-		float inertialResistance = 0.5f;
+		// Dispersion Rate
+		int dispersionRate = 10;
 		// Flag indicating whether the solid is free falling
 		bool wasMoving = true;
 		bool isMoving = true;

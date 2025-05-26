@@ -122,7 +122,7 @@ void CellularMatrix::update() {
 //-------------------------------------------
 void CellularMatrix::render(SDL_Renderer* renderer) {
 	// Convert element colors to pixel format
-	for (int y = 0; y < HEIGHT; ++y) {
+	for (int y = HEIGHT - 1; y >= 0; --y) {
 		for (int x = 0; x < WIDTH; ++x) {
 			SDL_Color color = matrix[y][x]->getColor();
 			// Pack RGBA components into a single 32-bit value

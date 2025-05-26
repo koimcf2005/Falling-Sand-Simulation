@@ -4,7 +4,11 @@
 
 const ElementColors::ElementColor ElementColors::C_EMPTY { SDL_Color {0, 0, 0, 0}, 0 };
 const ElementColors::ElementColor ElementColors::C_SAND { SDL_Color {194, 178, 128, 255}, 5 };
+const ElementColors::ElementColor ElementColors::C_DIRT { SDL_Color {98, 50, 19, 255}, 5 };
+const ElementColors::ElementColor ElementColors::C_COAL { SDL_Color {35, 35, 35, 255}, 5 };
+const ElementColors::ElementColor ElementColors::C_WATER { SDL_Color {51, 82, 72, 100}, 1 };
 const ElementColors::ElementColor ElementColors::C_STONE { SDL_Color {128, 128, 128, 255}, 5 };
+const ElementColors::ElementColor ElementColors::C_WOOD { SDL_Color {134, 97, 45, 255}, 5 };
 const ElementColors::ElementColor ElementColors::C_SMOKE { SDL_Color {33, 33, 33, 125}, 1 };
 
 std::map<ElementType, ElementColors::ElementColor> ElementColors::colorMap;
@@ -15,11 +19,17 @@ std::mt19937 ElementColors::rng{std::random_device{}()};
 void ElementColors::initialize(SDL_Renderer* renderer) {
 	colorMap[EMPTY] = C_EMPTY;
 	colorMap[SAND] = C_SAND;
+	colorMap[DIRT] = C_DIRT;
+	colorMap[COAL] = C_COAL;
+	colorMap[WATER] = C_WATER;
 	colorMap[STONE] = C_STONE;
+	colorMap[WOOD] = C_WOOD;
 	colorMap[SMOKE] = C_SMOKE;
 
 	SDL_Surface* stone_texture = IMG_Load("src/elements/textures/stone.png");
 	if (stone_texture) textureMap[STONE] = stone_texture;
+	SDL_Surface* wood_texture = IMG_Load("src/elements/textures/wood.png");
+	if (wood_texture) textureMap[WOOD] = wood_texture;
 }
 
 SDL_Color ElementColors::getColorByElementType(ElementType type, int x, int y) {

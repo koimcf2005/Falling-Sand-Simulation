@@ -33,7 +33,11 @@ class ElementColors {
 
 		static const ElementColor C_EMPTY;
 		static const ElementColor C_SAND;
+		static const ElementColor C_DIRT;
+		static const ElementColor C_COAL;
+		static const ElementColor C_WATER;
 		static const ElementColor C_STONE;
+		static const ElementColor C_WOOD;
 		static const ElementColor C_SMOKE;
 };
 
