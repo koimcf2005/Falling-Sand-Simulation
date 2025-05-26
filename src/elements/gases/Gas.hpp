@@ -1,43 +1,40 @@
 // -------------------------------------------
-// MovableSolid.hpp
+// Gas.hpp
 // -------------------------------------------
-// Base class for all movable solid elements (e.g., sand, powder).
+// Base class for all gas elements (e.g., steam, smoke).
 // Provides velocity and movement accumulation for smooth simulation.
 // Does not implement update logic directly; intended for inheritance.
 // -------------------------------------------
-#ifndef MOVABLE_SOLID_HPP
-#define MOVABLE_SOLID_HPP
+#ifndef GAS_HPP
+#define GAS_HPP
 
-#include "Solid.hpp"
+#include "Element.hpp"
 
-class MovableSolid : public Solid {
+class Gas : public Element {
 	public:
-		MovableSolid(ElementType type, int x, int y) : Solid(type, x, y) {}
+		Gas(ElementType type, int x, int y) : Element(type, x, y) {}
 		// Update function to be implemented by derived classes
 		void update(CellularMatrix& matrix, int x, int y) override;
 		
 	protected:
 		// Gravitational constant affecting the solid
-		const float GRAVITY = 0.1f;
+		const float UPWARD_MOMENTUM = 0.1f;
 		// Velocity (cells moved per update)
-		float velocity_y = 1.0f;
 		float velocity_x = 0.0f;
+		float velocity_y = -1.0f;
 		// Accumulated sub-cell movement for smooth simulation
-		float accumulated_y = 0.0f;
 		float accumulated_x = 0.0f;
-		// Friction
-		float friction = 0.5f;
-		// Absorption
-		float absorption = 0.5f;
-		// Resistance to inertia, affecting how quickly the solid stops
-		float inertialResistance = 0.5f;
+		float accumulated_y = 0.0f;
 		// Counter for how many updates the solid has been stopped
 		int stoppedMovingCount = 0;
 		// Threshold for determining when the solid is considered stopped
 		int stoppedMovingThreshold = 5;
 		// Flag indicating whether the solid is free falling
-		bool wasMoving = true;
 		bool isMoving = true;
+
+		float chanceOfHorizontal = 0.75f;
+
+		float chanceOfDeath = 0.01f;
 };
 
 #endif

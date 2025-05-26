@@ -9,9 +9,23 @@ int Element::getRandomDirection() {
     return dist(rng) == 0 ? -1 : 1;
 }
 
-void Element::update(CellularMatrix&, int, int) {
-	if (step == CellularMatrix::stepped) {
-		return;
+bool Element::checkIfUpdated() {
+	if (step == CellularMatrix::step) {
+		return true;
 	}
-	step = CellularMatrix::stepped;
+	step = CellularMatrix::step;
+	return false;
+}
+
+void Element::destroyElement(CellularMatrix& matrix, int x, int y) {
+	if (matrix.getElement(x, y)->getType() != EMPTY) {
+		Element* emptyElement = createElementFromType(EMPTY, x, y);
+		Element* oldElement = matrix.matrix[y][x];
+		matrix.matrix[y][x] = emptyElement;
+		delete oldElement;
+	}
+}
+
+void Element::update(CellularMatrix&, int, int) {
+	return;
 }

@@ -33,7 +33,7 @@ CellularMatrix::~CellularMatrix() {
 			delete matrix[x][y];
 }
 
-bool CellularMatrix::stepped = false;
+bool CellularMatrix::step = false;
 
 //-------------------------------------------
 // Rendering Setup
@@ -114,7 +114,7 @@ void CellularMatrix::update() {
 			matrix[y][x]->update(*this, x, y);
 		}
 	}
-	stepped = !stepped;
+	step = !step;
 }
 
 //-------------------------------------------

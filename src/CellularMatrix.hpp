@@ -18,12 +18,17 @@
 //-------------------------------------------
 class CellularMatrix {
 public:
-	static bool stepped;
+	static bool step;
 	//-------------------------------------------
 	// Construction/Destruction
 	//-------------------------------------------
 	CellularMatrix(int width, int height);
 	~CellularMatrix();
+
+	//-------------------------------------------
+	// Grid Properties
+	//-------------------------------------------
+	std::vector<std::vector<Element*>> matrix;		// 2D grid of elements
 
 	//-------------------------------------------
 	// Element Management
@@ -61,12 +66,8 @@ public:
 	void render(SDL_Renderer* renderer);
 
 private:
-	//-------------------------------------------
-	// Grid Properties
-	//-------------------------------------------
 	const int WIDTH, HEIGHT;						  // Grid dimensions
-	std::vector<std::vector<Element*>> matrix;		// 2D grid of elements
-	
+
 	std::mt19937 rng{std::random_device{}()};
 
 	//-------------------------------------------

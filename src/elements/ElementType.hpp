@@ -5,9 +5,10 @@
 // Element Types
 //-------------------------------------------
 enum ElementType {
-    EMPTY,      // Empty space (air)
-    SAND,       // Sand particle
-    STONE       // Static stone block
+    EMPTY,
+    SAND,
+    STONE,
+	SMOKE
 };
 
 // Forward declare Element class since we only need the pointer type

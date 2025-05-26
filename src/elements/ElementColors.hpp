@@ -34,6 +34,7 @@ class ElementColors {
 		static const ElementColor C_EMPTY;
 		static const ElementColor C_SAND;
 		static const ElementColor C_STONE;
+		static const ElementColor C_SMOKE;
 };
 
 #endif

@@ -90,6 +90,7 @@ int main(int /* unused */, char* /* unused */[]) {
     // Input state tracking
     bool leftMouseDown = false;
     bool rightMouseDown = false;
+    int prevGridX = -1, prevGridY = -1;
 
     //-------------------------------------------
     // Main Game Loop
@@ -128,6 +129,10 @@ int main(int /* unused */, char* /* unused */[]) {
                         selectedElement = STONE;
                         std::cout << "Selected Stone\n";
                         break;
+					case SDLK_3:
+                        selectedElement = SMOKE;
+                        std::cout << "Selected Smoke\n";
+                        break;
                     // Add more keys as needed for different Element types
                 }
             }
@@ -149,20 +154,50 @@ int main(int /* unused */, char* /* unused */[]) {
             int gridX = mouseX * RENDER_WIDTH / WINDOW_WIDTH;
             int gridY = mouseY * RENDER_HEIGHT / WINDOW_HEIGHT;
             if (gridX >= 0 && gridX < RENDER_WIDTH && gridY >= 0 && gridY < RENDER_HEIGHT) {
-                if (areaSize > 1) {
-                    if (leftMouseDown) {
-                        automata.placeElementsInArea(gridX, gridY, areaSize, selectedElement);
-                    } else if (rightMouseDown) {
-                        automata.placeElementsInArea(gridX, gridY, areaSize, EMPTY);
+                // Interpolate between previous and current mouse positions
+                if (prevGridX != -1 && prevGridY != -1) {
+                    int dx = gridX - prevGridX;
+                    int dy = gridY - prevGridY;
+                    int steps = std::max(std::abs(dx), std::abs(dy));
+                    for (int i = 1; i <= steps; ++i) {
+                        int interpX = prevGridX + dx * i / steps;
+                        int interpY = prevGridY + dy * i / steps;
+                        if (areaSize > 1) {
+                            if (leftMouseDown) {
+                                automata.placeElementsInArea(interpX, interpY, areaSize, selectedElement);
+                            } else if (rightMouseDown) {
+                                automata.placeElementsInArea(interpX, interpY, areaSize, EMPTY);
+                            }
+                        } else {
+                            if (leftMouseDown) {
+                                automata.placeElement(interpX, interpY, selectedElement);
+                            } else if (rightMouseDown) {
+                                automata.placeElement(interpX, interpY, EMPTY);
+                            }
+                        }
                     }
                 } else {
-                    if (leftMouseDown) {
-                        automata.placeElement(gridX, gridY, selectedElement);
-                    } else if (rightMouseDown) {
-                        automata.placeElement(gridX, gridY, EMPTY);
+                    // First click, just place at current position
+                    if (areaSize > 1) {
+                        if (leftMouseDown) {
+                            automata.placeElementsInArea(gridX, gridY, areaSize, selectedElement);
+                        } else if (rightMouseDown) {
+                            automata.placeElementsInArea(gridX, gridY, areaSize, EMPTY);
+                        }
+                    } else {
+                        if (leftMouseDown) {
+                            automata.placeElement(gridX, gridY, selectedElement);
+                        } else if (rightMouseDown) {
+                            automata.placeElement(gridX, gridY, EMPTY);
+                        }
                     }
                 }
+                prevGridX = gridX;
+                prevGridY = gridY;
             }
+        } else {
+            prevGridX = -1;
+            prevGridY = -1;
         }
 
         //----------------

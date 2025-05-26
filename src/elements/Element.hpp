@@ -28,17 +28,27 @@ class Element {
 		ElementType getType() { return type; };      // Get element type
 		virtual SDL_Color getColor() const { return color; } // Get element color
 		virtual void update(CellularMatrix& matrix, int x, int y) = 0;
+		bool step = false;
+
+		// Static utility for type checking (like Java's instanceof)
+		template<typename T>
+		static bool isInstanceOf(Element* element) {
+			return dynamic_cast<T*>(element) != nullptr;
+		}
 
 	protected:
 		// --- Random Number Generation ---
 		static std::mt19937 rng;      // Mersenne Twister RNG
 		static int getRandomDirection();           // Get random direction (-1 or 1)
 
+		bool checkIfUpdated();
+
+		static void destroyElement(CellularMatrix& matrix, int x, int y);
+
 		// --- Element Color ---
 		SDL_Color color = {255, 255, 255, 255}; // Default color (white)
 		ElementType type = EMPTY;
 
-		bool step = false;
 };
 
 #endif // ELEMENT_HPP
