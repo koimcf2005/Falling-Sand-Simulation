@@ -3,6 +3,7 @@
 
 #include "./elements/Element.hpp"
 #include "./elements/ElementColors.hpp"
+#include "Chunk.hpp"
 #include <SDL2/SDL.h>
 #include <vector>
 #include <iostream>
@@ -22,7 +23,7 @@ public:
 	//-------------------------------------------
 	// Construction/Destruction
 	//-------------------------------------------
-	CellularMatrix(int width, int height);
+	CellularMatrix(int width, int height, int chunkSize);
 	~CellularMatrix();
 
 	//-------------------------------------------
@@ -56,6 +57,9 @@ public:
 								std::vector<std::vector<Element*>>& matrix, 
 								int width, int height);
 
+	std::vector<std::vector<Chunk>> generateChunks();
+	std::vector<std::vector<Chunk>> chunks;
+
 	//-------------------------------------------
 	// Rendering
 	//-------------------------------------------
@@ -64,9 +68,12 @@ public:
 
 	// Render the current state to screen
 	void render(SDL_Renderer* renderer);
+	bool showGrid = false; // default: grid off
+
 
 private:
 	const int WIDTH, HEIGHT;						  // Grid dimensions
+	const int CHUNK_SIZE;
 
 	std::mt19937 rng{std::random_device{}()};
 
@@ -75,6 +82,7 @@ private:
 	//-------------------------------------------
 	SDL_Texture* renderTexture = nullptr;			 // Hardware accelerated texture
 	std::vector<Uint32> pixels;					   // Pixel buffer for efficient updates
+
 };
 
 #endif // CELLULAR_MATRIX_HPP

@@ -35,10 +35,13 @@ class ElementColors {
 		static const ElementColor C_SAND;
 		static const ElementColor C_DIRT;
 		static const ElementColor C_COAL;
+		static const ElementColor C_SALT;
 		static const ElementColor C_WATER;
+		static const ElementColor C_OIL;
 		static const ElementColor C_STONE;
 		static const ElementColor C_WOOD;
 		static const ElementColor C_SMOKE;
+		static const ElementColor C_NOT_MOVING;
 };
 
 #endif

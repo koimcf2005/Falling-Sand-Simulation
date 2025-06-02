@@ -16,6 +16,11 @@ class Liquid : public Element {
 		// Update function to be implemented by derived classes
 		void update(CellularMatrix& matrix, int x, int y) override;
 		
+		ElementType getDissolvedElement() const;
+		void setDissolvedElement(ElementType type);
+
+		void setdestroyDissolvedElement(bool value);
+
 	protected:
 		// Gravitational constant affecting the solid
 		const float GRAVITY = 0.1f;
@@ -27,9 +32,31 @@ class Liquid : public Element {
 		float accumulated_x = 0.0f;
 		// Dispersion Rate
 		int dispersionRate = 10;
-		// Flag indicating whether the solid is free falling
-		bool wasMoving = true;
-		bool isMoving = true;
+		// Dessolved Element
+		ElementType dissolvedElement = EMPTY;
+		bool destroyDissolvedElement = false;
+
+		//-------------------------------------------
+		// Dissolved Element Diffusion
+		//-------------------------------------------
+		void diffuseDissolvedElement(CellularMatrix& matrix, int x, int y);
+
+		//-------------------------------------------
+		// Movement/Spreading Logic
+		//-------------------------------------------
+		bool canReplaceElementForLiquid(CellularMatrix& matrix, int posX, int posY) const;
+		bool tryVerticalMove(CellularMatrix& matrix, int x, int y, int move_y);
+		bool handleHorizontalSpreading(CellularMatrix& matrix, int x, int y);
+
+		//-------------------------------------------
+		// Buoyancy (Liquid-on-Liquid)
+		//-------------------------------------------
+		bool handleLiquidBuoyancy(CellularMatrix& matrix, int x, int y);
+
+		//-------------------------------------------
+		// Inertia Propagation
+		//-------------------------------------------
+		void propagateInertiaToNeighbors(CellularMatrix& matrix, int x, int y);
 };
 
 #endif

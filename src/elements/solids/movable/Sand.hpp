@@ -11,6 +11,7 @@ public:
 		friction = 0.9f;
 		absorption = 0.5f;
 		inertialResistance = 0.05f;
+		density = 0.49f;
 	}
 };
 

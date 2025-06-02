@@ -2,15 +2,18 @@
 #include "elements/Empty.hpp"
 #include <algorithm>
 #include <random>
+#include <utility>
 
 //-------------------------------------------
 // Construction/Destruction
 //-------------------------------------------
-CellularMatrix::CellularMatrix(int width, int height)
+CellularMatrix::CellularMatrix(int width, int height, int chunkSize)
 	: WIDTH{width},
 	HEIGHT{height},
+	CHUNK_SIZE(chunkSize),
 	matrix(height),
 	pixels(width * height)  // Pre-allocate pixel buffer for rendering
+	// chunks(generateChunks())
 {
 	// Initialize the grid with empty elements
 	for (int y = 0; y < height; ++y) {
@@ -117,6 +120,30 @@ void CellularMatrix::update() {
 	step = !step;
 }
 
+std::vector<std::vector<Chunk>> CellularMatrix::generateChunks() {
+	std::vector<std::vector<Chunk>> chunkVector{};
+	int rows = static_cast<int>(std::ceil(static_cast<float>(HEIGHT / CHUNK_SIZE)));
+	int cols = static_cast<int>(std::ceil(static_cast<float>(WIDTH / CHUNK_SIZE)));
+
+	chunkVector.resize(rows);
+
+	for (int row = 0; row < rows; ++row) {
+		chunkVector[row].reserve(cols);
+		for (int col = 0; col < cols; ++col) {
+			int x = col * CHUNK_SIZE;
+			int y = row * CHUNK_SIZE;
+
+			Chunk newChunk(
+				{std::min(x, WIDTH), std::min(y, HEIGHT)},
+				{std::min(x + CHUNK_SIZE, WIDTH), std::min(y + CHUNK_SIZE, HEIGHT)}
+			);
+
+			chunkVector[col].push_back(newChunk);
+		}
+	}
+	return chunkVector;
+}
+
 //-------------------------------------------
 // Rendering
 //-------------------------------------------
@@ -125,15 +152,24 @@ void CellularMatrix::render(SDL_Renderer* renderer) {
 	for (int y = HEIGHT - 1; y >= 0; --y) {
 		for (int x = 0; x < WIDTH; ++x) {
 			SDL_Color color = matrix[y][x]->getColor();
-			// Pack RGBA components into a single 32-bit value
 			pixels[y * WIDTH + x] = (color.r << 24) | (color.g << 16) | 
 								   (color.b << 8) | color.a;
 		}
 	}
 
-	// Update texture in one batch operation
+	// Update and render texture
 	SDL_UpdateTexture(renderTexture, NULL, pixels.data(), WIDTH * sizeof(Uint32));
-	
-	// Render texture to screen
 	SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
+
+	// ✅ Draw grid if toggled
+	if (showGrid) {
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(renderer, 100, 100, 100, 100); // gray semi-transparent
+		for (int x = 0; x < WIDTH; x += CHUNK_SIZE) {
+			SDL_RenderDrawLine(renderer, x, 0, x, HEIGHT);
+		}
+		for (int y = HEIGHT - 1; y >= 0; y -= CHUNK_SIZE) {
+			SDL_RenderDrawLine(renderer, 0, y, WIDTH, y);
+		}
+	}
 }

@@ -8,6 +8,7 @@
 #ifndef MOVABLE_SOLID_HPP
 #define MOVABLE_SOLID_HPP
 
+#include <unordered_map>
 #include "Solid.hpp"
 
 class MovableSolid : public Solid {
@@ -15,8 +16,18 @@ class MovableSolid : public Solid {
 		MovableSolid(ElementType type, int x, int y) : Solid(type, x, y) {}
 		// Update function to be implemented by derived classes
 		void update(CellularMatrix& matrix, int x, int y) override;
-		
+
+		void setMovingByInertia();
+
 	protected:
+		bool canReplaceElement(CellularMatrix& matrix, int x, int y) const;
+
+		bool handleDissolving(CellularMatrix& matrix, int x, int y);
+
+		void handleDensity(CellularMatrix& matrix, int x, int y);
+
+		void affectAdjacentNeighbors(CellularMatrix& matrix, int x, int y);
+
 		// Gravitational constant affecting the solid
 		const float GRAVITY = 0.1f;
 		// Velocity (cells moved per update)
@@ -31,9 +42,6 @@ class MovableSolid : public Solid {
 		float absorption = 0.5f;
 		// Resistance to inertia, affecting how quickly the solid stops
 		float inertialResistance = 0.5f;
-		// Flag indicating whether the solid is free falling
-		bool wasMoving = true;
-		bool isMoving = true;
 };
 
 #endif

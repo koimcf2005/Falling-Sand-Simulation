@@ -2,7 +2,7 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++17 -Wall -Wextra -MMD -MP -I/usr/include/SDL2 -I./src -I./src/elements -I./src/elements/solids
+CXXFLAGS = -g -std=c++17 -Wall -Wextra -MMD -MP -I/usr/include/SDL2 -I./src -I./src/elements -I./src/elements/solids
 
 # Linker flags
 LDFLAGS = -lSDL2 -lSDL2_image

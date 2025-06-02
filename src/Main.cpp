@@ -11,8 +11,9 @@
 //-------------------------------------------
 const int WINDOW_WIDTH = 1280;	 // Display window width
 const int WINDOW_HEIGHT = 800;	 // Display window height
-const int RENDER_WIDTH = 256;	  // Internal simulation width
-const int RENDER_HEIGHT = 160;	 // Internal simulation height
+const int RENDER_WIDTH = 320;	  // Internal simulation width
+const int RENDER_HEIGHT = 200;	 // Internal simulation height
+const int CHUNK_SIZE = 16;
 
 //-------------------------------------------
 // Physics simulation constants
@@ -31,7 +32,7 @@ int main(int /* unused */, char* /* unused */[]) {
 
 	// Create window with specified dimensions
 	SDL_Window* window = SDL_CreateWindow(
-		"Cellular Automata with Element System",
+		"Cellular matrix with Element System",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		WINDOW_WIDTH, WINDOW_HEIGHT,
 		SDL_WINDOW_SHOWN
@@ -63,9 +64,9 @@ int main(int /* unused */, char* /* unused */[]) {
 	//-------------------------------------------
 	// Simulation Setup
 	//-------------------------------------------
-	// Initialize the cellular automata system
-	CellularMatrix automata(RENDER_WIDTH, RENDER_HEIGHT);
-	automata.initializeRenderer(renderer);
+	// Initialize the cellular matrix system
+	CellularMatrix matrix(RENDER_WIDTH, RENDER_HEIGHT, CHUNK_SIZE);
+	matrix.initializeRenderer(renderer);
 
 	// Initialize simulation variables
 	ElementType selectedElement = SAND;
@@ -134,20 +135,31 @@ int main(int /* unused */, char* /* unused */[]) {
 						std::cout << "Selected Coal\n";
 						break;
 					case SDLK_4:
+						selectedElement = SALT;
+						std::cout << "Selected Salt\n";
+						break;
+					case SDLK_5:
 						selectedElement = WATER;
 						std::cout << "Selected Water\n";
 						break;
-					case SDLK_5:
+					case SDLK_6:
+						selectedElement = OIL;
+						std::cout << "Selected Oil\n";
+						break;
+					case SDLK_7:
 						selectedElement = STONE;
 						std::cout << "Selected Stone\n";
 						break;
-					case SDLK_6:
+					case SDLK_8:
 						selectedElement = WOOD;
 						std::cout << "Selected Wood\n";
 						break;
-					case SDLK_7:
+					case SDLK_9:
 						selectedElement = SMOKE;
 						std::cout << "Selected Smoke\n";
+						break;
+					case SDLK_c:
+						matrix.showGrid = !matrix.showGrid;
 						break;
 					// Add more keys as needed for different Element types
 				}
@@ -155,7 +167,7 @@ int main(int /* unused */, char* /* unused */[]) {
 			// Handle scroll wheel to change area size
 			else if (event.type == SDL_MOUSEWHEEL) {
 				if (event.wheel.y > 0) {  // Scroll up
-					areaSize = std::min(areaSize + 1, 10);  // Cap at a reasonable maximum
+					areaSize = std::min(areaSize + 1, 20);  // Cap at a reasonable maximum
 				} else if (event.wheel.y < 0) {  // Scroll down
 					areaSize = std::max(areaSize - 1, 1);  // Minimum size is 1
 				}
@@ -180,15 +192,15 @@ int main(int /* unused */, char* /* unused */[]) {
 						int interpY = prevGridY + dy * i / steps;
 						if (areaSize > 1) {
 							if (leftMouseDown) {
-								automata.placeElementsInArea(interpX, interpY, areaSize, selectedElement);
+								matrix.placeElementsInArea(interpX, interpY, areaSize, selectedElement);
 							} else if (rightMouseDown) {
-								automata.placeElementsInArea(interpX, interpY, areaSize, EMPTY);
+								matrix.placeElementsInArea(interpX, interpY, areaSize, EMPTY);
 							}
 						} else {
 							if (leftMouseDown) {
-								automata.placeElement(interpX, interpY, selectedElement);
+								matrix.placeElement(interpX, interpY, selectedElement);
 							} else if (rightMouseDown) {
-								automata.placeElement(interpX, interpY, EMPTY);
+								matrix.placeElement(interpX, interpY, EMPTY);
 							}
 						}
 					}
@@ -196,15 +208,15 @@ int main(int /* unused */, char* /* unused */[]) {
 					// First click, just place at current position
 					if (areaSize > 1) {
 						if (leftMouseDown) {
-							automata.placeElementsInArea(gridX, gridY, areaSize, selectedElement);
+							matrix.placeElementsInArea(gridX, gridY, areaSize, selectedElement);
 						} else if (rightMouseDown) {
-							automata.placeElementsInArea(gridX, gridY, areaSize, EMPTY);
+							matrix.placeElementsInArea(gridX, gridY, areaSize, EMPTY);
 						}
 					} else {
 						if (leftMouseDown) {
-							automata.placeElement(gridX, gridY, selectedElement);
+							matrix.placeElement(gridX, gridY, selectedElement);
 						} else if (rightMouseDown) {
-							automata.placeElement(gridX, gridY, EMPTY);
+							matrix.placeElement(gridX, gridY, EMPTY);
 						}
 					}
 				}
@@ -221,7 +233,7 @@ int main(int /* unused */, char* /* unused */[]) {
 		//----------------
 		// Process physics updates at fixed time intervals
 		while (lag >= MS_PER_UPDATE) {
-			automata.update();
+			matrix.update();
 			lag -= MS_PER_UPDATE;
 		}
 
@@ -234,7 +246,7 @@ int main(int /* unused */, char* /* unused */[]) {
 			frameCount = 0;
 			fpsLastTime = currentTime;
 			
-			std::string title = "Cellular Automata with Element System - FPS: " 
+			std::string title = "Cellular matrix with Element System - FPS: " 
 							 + std::to_string(static_cast<int>(fps));
 			SDL_SetWindowTitle(window, title.c_str());
 		}
@@ -244,7 +256,7 @@ int main(int /* unused */, char* /* unused */[]) {
 		//----------------
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderClear(renderer);
-		automata.render(renderer);
+		matrix.render(renderer);
 		SDL_RenderPresent(renderer);
 	}
 

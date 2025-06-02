@@ -6,10 +6,13 @@ const ElementColors::ElementColor ElementColors::C_EMPTY { SDL_Color {0, 0, 0, 0
 const ElementColors::ElementColor ElementColors::C_SAND { SDL_Color {194, 178, 128, 255}, 5 };
 const ElementColors::ElementColor ElementColors::C_DIRT { SDL_Color {98, 50, 19, 255}, 5 };
 const ElementColors::ElementColor ElementColors::C_COAL { SDL_Color {35, 35, 35, 255}, 5 };
+const ElementColors::ElementColor ElementColors::C_SALT { SDL_Color {255, 255, 255, 255}, 5 };
 const ElementColors::ElementColor ElementColors::C_WATER { SDL_Color {51, 82, 72, 100}, 1 };
+const ElementColors::ElementColor ElementColors::C_OIL { SDL_Color {40, 40, 40, 100}, 1 };
 const ElementColors::ElementColor ElementColors::C_STONE { SDL_Color {128, 128, 128, 255}, 5 };
 const ElementColors::ElementColor ElementColors::C_WOOD { SDL_Color {134, 97, 45, 255}, 5 };
 const ElementColors::ElementColor ElementColors::C_SMOKE { SDL_Color {33, 33, 33, 125}, 1 };
+const ElementColors::ElementColor ElementColors::C_NOT_MOVING { SDL_Color {255, 0, 0, 255}, 1 };
 
 std::map<ElementType, ElementColors::ElementColor> ElementColors::colorMap;
 std::map<ElementType, SDL_Surface*> ElementColors::textureMap;
@@ -21,10 +24,13 @@ void ElementColors::initialize(SDL_Renderer* renderer) {
 	colorMap[SAND] = C_SAND;
 	colorMap[DIRT] = C_DIRT;
 	colorMap[COAL] = C_COAL;
+	colorMap[SALT] = C_SALT;
 	colorMap[WATER] = C_WATER;
+	colorMap[OIL] = C_OIL;
 	colorMap[STONE] = C_STONE;
 	colorMap[WOOD] = C_WOOD;
 	colorMap[SMOKE] = C_SMOKE;
+	colorMap[NOT_MOVING] = C_NOT_MOVING;
 
 	SDL_Surface* stone_texture = IMG_Load("src/elements/textures/stone.png");
 	if (stone_texture) textureMap[STONE] = stone_texture;
