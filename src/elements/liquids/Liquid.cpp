@@ -229,7 +229,4 @@ void Liquid::update(CellularMatrix& matrix, int x, int y) {
 
 		propagateInertiaToNeighbors(matrix, x, y);
 	}
-	color = matrix.showGrid && !isMoving ? 
-		ElementColors::getColorByElementType(NOT_MOVING, x, y) :
-		backup_color;
 }

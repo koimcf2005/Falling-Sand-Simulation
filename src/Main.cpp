@@ -13,7 +13,6 @@ const int WINDOW_WIDTH = 1280;	 // Display window width
 const int WINDOW_HEIGHT = 800;	 // Display window height
 const int RENDER_WIDTH = 320;	  // Internal simulation width
 const int RENDER_HEIGHT = 200;	 // Internal simulation height
-const int CHUNK_SIZE = 16;
 
 //-------------------------------------------
 // Physics simulation constants
@@ -65,7 +64,7 @@ int main(int /* unused */, char* /* unused */[]) {
 	// Simulation Setup
 	//-------------------------------------------
 	// Initialize the cellular matrix system
-	CellularMatrix matrix(RENDER_WIDTH, RENDER_HEIGHT, CHUNK_SIZE);
+	CellularMatrix matrix(RENDER_WIDTH, RENDER_HEIGHT);
 	matrix.initializeRenderer(renderer);
 
 	// Initialize simulation variables
@@ -157,9 +156,6 @@ int main(int /* unused */, char* /* unused */[]) {
 					case SDLK_9:
 						selectedElement = SMOKE;
 						std::cout << "Selected Smoke\n";
-						break;
-					case SDLK_c:
-						matrix.showGrid = !matrix.showGrid;
 						break;
 					// Add more keys as needed for different Element types
 				}

@@ -94,9 +94,6 @@ void MovableSolid::update(CellularMatrix& matrix, int x, int y) {
 		if (!movedThisFrame && !wasMoving) isMoving = false;
 		wasMoving = movedThisFrame;
 	}
-	color = matrix.showGrid && !isMoving ? 
-		ElementColors::getColorByElementType(NOT_MOVING, x, y) :
-		backup_color;
 }
 
 bool MovableSolid::canReplaceElement(CellularMatrix& matrix, int x, int y) const {

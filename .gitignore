@@ -1,5 +1,8 @@
 .vscode
 SDL2.dll
+backup_and_zip.sh
+extract_backup.sh
 src/include/
 src/lib
 build/
+*.zip
