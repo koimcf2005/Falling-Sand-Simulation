@@ -1,0 +1,35 @@
+// src/elements/IMatrixAccess.hpp
+#ifndef IMATRIX_ACCESS_HPP
+#define IMATRIX_ACCESS_HPP
+
+#include "ElementType.hpp"
+
+// Forward declaration
+class Element;
+
+//-------------------------------------------
+// Matrix Access Interface
+//-------------------------------------------
+// Interface that provides controlled access to matrix operations
+// without exposing the full CellularMatrix implementation
+//-------------------------------------------
+class IMatrixAccess {
+public:
+    virtual ~IMatrixAccess() = default;
+    
+    // Bounds checking
+    virtual bool isInBounds(int x, int y) const = 0;
+    
+    // Element access
+    virtual Element*& getElement(int x, int y) = 0;
+    virtual const Element* getElement(int x, int y) const = 0;
+    
+    // Type checking
+    virtual bool isEmpty(int x, int y) const = 0;
+    
+    // Element management
+    virtual void destroyElement(int x, int y) = 0;
+    virtual void swapElements(int x1, int y1, int x2, int y2) = 0;
+};
+
+#endif // IMATRIX_ACCESS_HPP

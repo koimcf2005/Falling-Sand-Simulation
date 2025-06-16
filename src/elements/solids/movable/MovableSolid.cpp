@@ -8,7 +8,7 @@
 // Update Behavior
 //-------------------------------------------
 // Update the state and movement of a movable solid (e.g., sand)
-void MovableSolid::update(CellularMatrix& matrix, int x, int y) {
+void MovableSolid::update(IMatrixAccess& matrix, int x, int y) {
 	if (checkIfUpdated()) return; // Prevent double-updating in one frame
 
 	bool movedThisFrame = false; // Tracks if this particle moved this frame
@@ -96,7 +96,7 @@ void MovableSolid::update(CellularMatrix& matrix, int x, int y) {
 	}
 }
 
-bool MovableSolid::canReplaceElement(CellularMatrix& matrix, int x, int y) const {
+bool MovableSolid::canReplaceElement(IMatrixAccess& matrix, int x, int y) const {
 	if (!matrix.isInBounds(x, y)) return false;
 	if (matrix.isEmpty(x, y)) return true;
 	if (Element::isInstanceOf<Gas>(matrix.getElement(x, y))) return true;
@@ -104,7 +104,7 @@ bool MovableSolid::canReplaceElement(CellularMatrix& matrix, int x, int y) const
 	return false;
 }
 
-bool MovableSolid::handleDissolving(CellularMatrix& matrix, int x, int y) {
+bool MovableSolid::handleDissolving(IMatrixAccess& matrix, int x, int y) {
 	// If this solid has any dissolve chances defined
 	if (dissolveChances.size() > 0) {
 		for (const auto& pair : dissolveChances) {
@@ -121,18 +121,19 @@ bool MovableSolid::handleDissolving(CellularMatrix& matrix, int x, int y) {
 			// Roll for dissolution: only proceed if random chance passes
 			if (norm_dist(rng) < chance && matrix.isInBounds(x, y)) {
 				// Collect up to dissolveThreshold unique empty liquids to dissolve into
+				// Fix signed/unsigned comparison warnings by casting emptyLiquids.size() to int
 				for (auto* liquid : liquids) {
 					if (liquid->getDissolvedElement() == EMPTY) {
 						auto it = std::find(emptyLiquids.begin(), emptyLiquids.end(), liquid);
 						if (it == emptyLiquids.end()) {
 							emptyLiquids.push_back(liquid);
-							if (emptyLiquids.size() >= dissolveThreshold) break;
+							if (static_cast<int>(emptyLiquids.size()) >= dissolveThreshold) break;
 						}
 					}
 				}
 
 				// If enough empty liquids are available, perform the dissolve
-				if (emptyLiquids.size() >= dissolveThreshold) {
+				if (static_cast<int>(emptyLiquids.size()) >= dissolveThreshold) {
 					// Mark the first liquid to destroy its dissolved element (if needed for cleanup)
 					if (!emptyLiquids.empty()) {
 						emptyLiquids.front()->setdestroyDissolvedElement(true);
@@ -149,7 +150,7 @@ bool MovableSolid::handleDissolving(CellularMatrix& matrix, int x, int y) {
 	return false;
 }
 
-void MovableSolid::handleDensity(CellularMatrix& matrix, int x, int y) {
+void MovableSolid::handleDensity(IMatrixAccess& matrix, int x, int y) {
 	Element* above = matrix.isInBounds(x, y - 1) ? matrix.getElement(x, y - 1) : nullptr;
 	if (above && Element::isInstanceOf<Liquid>(above)) {
 		velocity_y = 0.0f;
@@ -184,7 +185,7 @@ void MovableSolid::handleDensity(CellularMatrix& matrix, int x, int y) {
 	}
 }
 
-void MovableSolid::affectAdjacentNeighbors(CellularMatrix& matrix, int x, int y) {
+void MovableSolid::affectAdjacentNeighbors(IMatrixAccess& matrix, int x, int y) {
 	// Inertia propagation: randomly wake up left/right neighbors
 	MovableSolid* leftNeighbor = nullptr;
 	if (matrix.isInBounds(x - 1, y))

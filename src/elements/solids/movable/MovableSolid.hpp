@@ -15,18 +15,18 @@ class MovableSolid : public Solid {
 	public:
 		MovableSolid(ElementType type, int x, int y) : Solid(type, x, y) {}
 		// Update function to be implemented by derived classes
-		void update(CellularMatrix& matrix, int x, int y) override;
+		void update(IMatrixAccess& matrix, int x, int y) override;
 
 		void setMovingByInertia();
 
 	protected:
-		bool canReplaceElement(CellularMatrix& matrix, int x, int y) const;
+		bool canReplaceElement(IMatrixAccess& matrix, int x, int y) const;
 
-		bool handleDissolving(CellularMatrix& matrix, int x, int y);
+		bool handleDissolving(IMatrixAccess& matrix, int x, int y);
 
-		void handleDensity(CellularMatrix& matrix, int x, int y);
+		void handleDensity(IMatrixAccess& matrix, int x, int y);
 
-		void affectAdjacentNeighbors(CellularMatrix& matrix, int x, int y);
+		void affectAdjacentNeighbors(IMatrixAccess& matrix, int x, int y);
 
 		// Gravitational constant affecting the solid
 		const float GRAVITY = 0.1f;

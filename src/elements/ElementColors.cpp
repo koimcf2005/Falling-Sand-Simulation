@@ -19,7 +19,7 @@ std::map<ElementType, SDL_Surface*> ElementColors::textureMap;
 
 std::mt19937 ElementColors::rng{std::random_device{}()};
 
-void ElementColors::initialize(SDL_Renderer* renderer) {
+void ElementColors::initialize(SDL_Renderer* /*renderer*/) {
 	colorMap[EMPTY] = C_EMPTY;
 	colorMap[SAND] = C_SAND;
 	colorMap[DIRT] = C_DIRT;
@@ -48,7 +48,7 @@ SDL_Color ElementColors::getColorByElementType(ElementType type, int x, int y) {
 	}
 }
 
-SDL_Color ElementColors::getTextureColor(ElementType type, SDL_Surface* surface, int x, int y) {
+SDL_Color ElementColors::getTextureColor(ElementType /*type*/, SDL_Surface* surface, int x, int y) {
 	// Tile the texture
 	x = ((x % surface->w) + surface->w) % surface->w;
 	y = ((y % surface->h) + surface->h) % surface->h;

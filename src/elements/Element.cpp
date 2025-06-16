@@ -1,21 +1,17 @@
-// -------------------------------------------
-// Element.cpp
-// -------------------------------------------
-// Implementation of the base Element class.
-// Handles construction, color, step flag, and utility functions.
-// -------------------------------------------
+// src/elements/Element.cpp
 #include "Element.hpp"
-#include "CellularMatrix.hpp"
+#include "ElementType.hpp"
 
-// --- Static RNG initialization ---
+// --- Static members ---
 std::mt19937 Element::rng{std::random_device{}()};
 std::uniform_real_distribution<float> Element::norm_dist(0.0f, 1.0f);
+bool Element::globalStep = false;
 
 // --- Construction ---
 Element::Element(ElementType type, int x, int y)
-	: color(ElementColors::getColorByElementType(type, x, y)),
-	backup_color(color),
-	type(type)
+    : color(ElementColors::getColorByElementType(type, x, y)),
+    backup_color(color),
+    type(type)
 {}
 
 // --- Getters/Setters ---
@@ -27,39 +23,34 @@ void Element::setStep(bool value) { step = value; }
 SDL_Color Element::getColor() const { return color; }
 void Element::setColor(const SDL_Color& newColor) { color = newColor; }
 
-float Element::getDensity() const { return density; };
+float Element::getDensity() const { return density; }
 
 // --- Random Direction Utility ---
 int Element::getRandomDirection() {
-	static std::uniform_int_distribution<int> dist(0, 1);
-	return dist(rng) == 0 ? -1 : 1;
+    static std::uniform_int_distribution<int> dist(0, 1);
+    return dist(rng) == 0 ? -1 : 1;
 }
 
 // --- Update Helper ---
 bool Element::checkIfUpdated() {
-	if (step == CellularMatrix::step) {
-		return true;
-	}
-	step = CellularMatrix::step;
-	return false;
+    if (step == globalStep) {
+        return true;
+    }
+    step = globalStep;
+    return false;
 }
 
-void Element::swapElement(CellularMatrix& matrix, int x1, int y1, int x2, int y2) {
-	std::swap(matrix.getElement(x1, y1), matrix.getElement(x2, y2));
-	matrix.getElement(x2, y2)->setStep(CellularMatrix::step);
-};
+void Element::swapElement(IMatrixAccess& matrix, int x1, int y1, int x2, int y2) {
+    matrix.swapElements(x1, y1, x2, y2);
+    matrix.getElement(x2, y2)->setStep(globalStep);
+}
 
 // --- Destroy Element Utility ---
-void Element::destroyElement(CellularMatrix& matrix, int x, int y) {
-	if (matrix.getElement(x, y)->getType() != EMPTY) {
-		Element* emptyElement = createElementFromType(EMPTY, x, y);
-		Element* oldElement = matrix.matrix[y][x];
-		matrix.matrix[y][x] = emptyElement;
-		delete oldElement;
-	}
+void Element::destroyElement(IMatrixAccess& matrix, int x, int y) {
+    matrix.destroyElement(x, y);
 }
 
-// --- Default update (should not be called directly) ---
-void Element::update(CellularMatrix&, int, int) {
-	return;
+// --- Default update ---
+void Element::update(IMatrixAccess&, int, int) {
+    return;
 }

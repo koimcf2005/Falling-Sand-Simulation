@@ -14,7 +14,7 @@ class ImmoveableSolid : public Solid {
 public:
 	ImmoveableSolid(ElementType type, int x, int y) : Solid(type, x, y) {}
 	// No-op update: does not move or change
-	void update(CellularMatrix& matrix, int x, int y) override;
+	void update(IMatrixAccess& matrix, int x, int y) override;
 protected:
 	// No additional members
 };

@@ -18,7 +18,7 @@ void Liquid::setdestroyDissolvedElement(bool value) {
 //-------------------------------------------
 // Dissolved Element Diffusion
 //-------------------------------------------
-void Liquid::diffuseDissolvedElement(CellularMatrix& matrix, int x, int y) {
+void Liquid::diffuseDissolvedElement(IMatrixAccess& matrix, int x, int y) {
 	if (dissolvedElement != EMPTY) {
 		std::vector<std::pair<int, int>> neighborCoords;
 		for (int dx = -1; dx <= 1; ++dx) {
@@ -45,7 +45,7 @@ void Liquid::diffuseDissolvedElement(CellularMatrix& matrix, int x, int y) {
 //-------------------------------------------
 // Movement/Spreading Logic
 //-------------------------------------------
-bool Liquid::tryVerticalMove(CellularMatrix& matrix, int x, int y, int move_y) {
+bool Liquid::tryVerticalMove(IMatrixAccess& matrix, int x, int y, int move_y) {
 	int last_valid_y = y;
 	for (int i = 1; i <= std::abs(move_y); ++i) {
 		int check_y = y + (move_y > 0 ? i : -i);
@@ -63,7 +63,7 @@ bool Liquid::tryVerticalMove(CellularMatrix& matrix, int x, int y, int move_y) {
 	return false;
 }
 
-bool Liquid::handleHorizontalSpreading(CellularMatrix& matrix, int x, int y) {
+bool Liquid::handleHorizontalSpreading(IMatrixAccess& matrix, int x, int y) {
 	bool moved = false;
 	int emptyCount = 0;
 	for (int dx = -1; dx <= 1; ++dx) {
@@ -137,7 +137,7 @@ bool Liquid::handleHorizontalSpreading(CellularMatrix& matrix, int x, int y) {
 //-------------------------------------------
 // Buoyancy (Liquid-on-Liquid)
 //-------------------------------------------
-bool Liquid::handleLiquidBuoyancy(CellularMatrix& matrix, int x, int y) {
+bool Liquid::handleLiquidBuoyancy(IMatrixAccess& matrix, int x, int y) {
 	if (matrix.isInBounds(x, y - 1)) {
 		Element* aboveElem = matrix.getElement(x, y - 1);
 		Liquid* above = dynamic_cast<Liquid*>(aboveElem);
@@ -164,7 +164,7 @@ bool Liquid::handleLiquidBuoyancy(CellularMatrix& matrix, int x, int y) {
 //-------------------------------------------
 // Inertia Propagation
 //-------------------------------------------
-void Liquid::propagateInertiaToNeighbors(CellularMatrix& matrix, int x, int y) {
+void Liquid::propagateInertiaToNeighbors(IMatrixAccess& matrix, int x, int y) {
 	MovableSolid* leftNeighbor = nullptr;
 	if (matrix.isInBounds(x - 1, y))
 		leftNeighbor = dynamic_cast<MovableSolid*>(matrix.getElement(x - 1, y));
@@ -178,7 +178,7 @@ void Liquid::propagateInertiaToNeighbors(CellularMatrix& matrix, int x, int y) {
 //-------------------------------------------
 // Main Update
 //-------------------------------------------
-bool Liquid::canReplaceElementForLiquid(CellularMatrix& matrix, int posX, int posY) const {
+bool Liquid::canReplaceElementForLiquid(IMatrixAccess& matrix, int posX, int posY) const {
 	if (!matrix.isInBounds(posX, posY)) return false;
 	Element* elem = matrix.getElement(posX, posY);
 	if (elem && elem->getType() == getType()) return false;
@@ -186,7 +186,7 @@ bool Liquid::canReplaceElementForLiquid(CellularMatrix& matrix, int posX, int po
 	return false;
 }
 
-void Liquid::update(CellularMatrix& matrix, int x, int y) {
+void Liquid::update(IMatrixAccess& matrix, int x, int y) {
 	if (checkIfUpdated()) return;
 
 	diffuseDissolvedElement(matrix, x, y);

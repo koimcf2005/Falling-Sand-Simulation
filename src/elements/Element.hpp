@@ -1,9 +1,4 @@
-// -------------------------------------------
-// Element.hpp
-// -------------------------------------------
-// Base class for all elements in the simulation.
-// Provides color, randomization, and interface for simulation behavior.
-// -------------------------------------------
+// src/elements/Element.hpp
 #ifndef ELEMENT_HPP
 #define ELEMENT_HPP
 
@@ -14,90 +9,87 @@
 #include <unordered_map>
 #include "ElementType.hpp"
 #include "ElementColors.hpp"
-
-// Forward declaration to avoid circular dependency
-class CellularMatrix;
+#include "IMatrixAccess.hpp"
 
 class Element {
 public:
-	// --- Construction/Destruction ---
-	Element(ElementType type, int x, int y);
-	virtual ~Element() = default;
+    // --- Construction/Destruction ---
+    Element(ElementType type, int x, int y);
+    virtual ~Element() = default;
 
-	// --- Core Interface ---
-	ElementType getType() const;
-	virtual void update(CellularMatrix& matrix, int x, int y) = 0;
+    // --- Core Interface ---
+    ElementType getType() const;
+    virtual void update(IMatrixAccess& matrix, int x, int y) = 0;
 
-	// --- Step Flag ---
-	bool getStep() const;
-	void setStep(bool value);
+    // --- Step Flag ---
+    bool getStep() const;
+    void setStep(bool value);
 
-	// --- Color ---
-	SDL_Color getColor() const;
-	void setColor(const SDL_Color& newColor);
+    // --- Color ---
+    SDL_Color getColor() const;
+    void setColor(const SDL_Color& newColor);
 
-	float getDensity() const;
+    float getDensity() const;
+
+    // --- Static Step Flag ---
+    static bool globalStep;
 
 protected:
-	// --- Random Number Generation ---
-	static std::mt19937 rng; // Mersenne Twister RNG
-	static std::uniform_real_distribution<float> norm_dist;
-	static int getRandomDirection(); // Get random direction (-1 or 1)
+    // --- Random Number Generation ---
+    static std::mt19937 rng;
+    static std::uniform_real_distribution<float> norm_dist;
+    static int getRandomDirection();
 
-	// --- Update Helper ---
-	bool checkIfUpdated();
-	bool step = false; // Used to prevent double-updating in a single frame
+    // --- Update Helper ---
+    bool checkIfUpdated();
+    bool step = false;
 
-	// --- Element Management ---
-	static void swapElement(CellularMatrix& matrix, int x1, int y1, int x2, int y2);
-	static void destroyElement(CellularMatrix& matrix, int x, int y);
+    // --- Element Management ---
+    static void swapElement(IMatrixAccess& matrix, int x1, int y1, int x2, int y2);
+    static void destroyElement(IMatrixAccess& matrix, int x, int y);
 
-	// --- Neighbor/Type Utilities ---
-	static int isInsideElement(CellularMatrix& matrix, ElementType type, int x, int y);
-	// Type checking utility (like Java's instanceof)
-	template<typename T>
-	static bool isInstanceOf(Element* element) {
-		return dynamic_cast<T*>(element) != nullptr;
-	}
+    // --- Neighbor/Type Utilities ---
+    static int isInsideElement(IMatrixAccess& matrix, ElementType type, int x, int y);
+    
+    template<typename T>
+    static bool isInstanceOf(Element* element) {
+        return dynamic_cast<T*>(element) != nullptr;
+    }
 
-	// --- Dissolution ---
-	// List of elements this can be dissolved in, mapped to chance
-	std::unordered_map<ElementType, float> dissolveChances;
-	int dissolveThreshold = 1;
+    // --- Element Properties ---
+    SDL_Color color = {255, 255, 255, 255};
+    SDL_Color backup_color = {255, 255, 255, 255};
+    ElementType type = EMPTY;
+    float density = 0.5f;
+    bool wasMoving = true;
+    bool isMoving = true;
 
-	// --- Element Properties ---
-	SDL_Color color = {255, 255, 255, 255}; // Default color (white)
-	SDL_Color backup_color = {255, 255, 255, 255};
-	ElementType type = EMPTY;
+    // --- Dissolution ---
+    std::unordered_map<ElementType, float> dissolveChances;
+    int dissolveThreshold = 1;
 
-	float density = 0.5f;
-
-	// Flag indicating whether the solid is free falling
-	bool wasMoving = true;
-	bool isMoving = true;
-
-	// Returns a vector of pointers to neighboring elements of the specified type
-	template<typename T>
-	static std::vector<T*> getNeighborElementsOfType(CellularMatrix& matrix, ElementType type, int x, int y) {
-		std::vector<T*> neighbors;
-		for (int dx = -1; dx <= 1; ++dx) {
-			for (int dy = -1; dy <= 1; ++dy) {
-				if (dx == 0 && dy == 0) continue; // Skip the center cell
-				int nx = x + dx;
-				int ny = y + dy;
-				if (matrix.isInBounds(nx, ny)) {
-					Element* elem = matrix.getElement(nx, ny);
-					if (elem && elem->getType() == type) {
-						T* casted = dynamic_cast<T*>(elem);
-						if (casted) {
-							neighbors.push_back(casted);
-						}
-					}
-				}
-			}
-		}
-		return neighbors;
-	}
+    // Returns a vector of pointers to neighboring elements of the specified type
+    template<typename T>
+    static std::vector<T*> getNeighborElementsOfType(IMatrixAccess& matrix, ElementType type, int x, int y) {
+        std::vector<T*> neighbors;
+        for (int dx = -1; dx <= 1; ++dx) {
+            for (int dy = -1; dy <= 1; ++dy) {
+                if (dx == 0 && dy == 0) continue;
+                int nx = x + dx;
+                int ny = y + dy;
+                if (matrix.isInBounds(nx, ny)) {
+                    Element* elem = matrix.getElement(nx, ny);
+                    if (elem && elem->getType() == type) {
+                        T* casted = dynamic_cast<T*>(elem);
+                        if (casted) {
+                            neighbors.push_back(casted);
+                        }
+                    }
+                }
+            }
+        }
+        return neighbors;
+    }
 };
 
 #endif // ELEMENT_HPP

@@ -7,7 +7,7 @@ class Empty : public Element {
 	public:
 		Empty(int x, int y) : Element(EMPTY, x, y) {}
 
-		void update(CellularMatrix&, int, int) override {
+		void update(IMatrixAccess&, int, int) override {
 			return;
 		}
 };
