@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include "ElementType.hpp"
 #include "ElementColors.hpp"
-#include "IMatrixAccess.hpp"
+#include "../IMatrix.hpp"
 
 class Element {
 public:

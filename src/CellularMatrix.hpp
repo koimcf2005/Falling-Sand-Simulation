@@ -5,7 +5,7 @@
 #include "./elements/Element.hpp"
 #include "./elements/ElementType.hpp"
 #include "./elements/ElementColors.hpp"
-#include "./elements/IMatrixAccess.hpp"
+#include "IMatrix.hpp"
 #include <SDL2/SDL.h>
 #include <vector>
 #include <iostream>
