@@ -68,6 +68,22 @@ void CellularMatrix::swapElements(int x1, int y1, int x2, int y2) {
 }
 
 //-------------------------------------------
+// Rendering Setup
+//-------------------------------------------
+void CellularMatrix::initializeRenderer(SDL_Renderer* renderer) {
+	// Clean up existing texture if any
+	if (renderTexture) {
+		SDL_DestroyTexture(renderTexture);
+	}
+
+	// Create streaming texture for efficient updates
+	renderTexture = SDL_CreateTexture(renderer, 
+									SDL_PIXELFORMAT_RGBA8888,
+									SDL_TEXTUREACCESS_STREAMING,
+									WIDTH, HEIGHT);
+}
+
+//-------------------------------------------
 // Element Management
 //-------------------------------------------
 void CellularMatrix::placeElement(int x, int y, ElementType type) {
@@ -112,22 +128,6 @@ void CellularMatrix::update() {
         }
     }
     Element::globalStep = !Element::globalStep;
-}
-
-//-------------------------------------------
-// Rendering Setup
-//-------------------------------------------
-void CellularMatrix::initializeRenderer(SDL_Renderer* renderer) {
-	// Clean up existing texture if any
-	if (renderTexture) {
-		SDL_DestroyTexture(renderTexture);
-	}
-
-	// Create streaming texture for efficient updates
-	renderTexture = SDL_CreateTexture(renderer, 
-									SDL_PIXELFORMAT_RGBA8888,
-									SDL_TEXTUREACCESS_STREAMING,
-									WIDTH, HEIGHT);
 }
 
 //-------------------------------------------
