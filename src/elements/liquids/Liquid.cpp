@@ -74,11 +74,6 @@ bool Liquid::handleHorizontalSpreading(IMatrixAccess& matrix, int x, int y) {
 			}
 		}
 	}
-	if (emptyCount >= 3) {
-		color = ElementColors::getColorByElementType(EMPTY, x, y);
-	} else {
-		color = ElementColors::getColorByElementType(getType(), x, y);
-	}
 	// Diagonal slide
 	if (canReplaceElementForLiquid(matrix, x + 1, y + 1)) {
 		Element::swapElement(matrix, x, y, x + 1, y + 1);
