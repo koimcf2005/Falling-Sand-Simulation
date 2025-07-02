@@ -133,16 +133,19 @@ bool Liquid::handleHorizontalSpreading(IMatrixAccess& matrix, int x, int y) {
 // Buoyancy (Liquid-on-Liquid)
 //-------------------------------------------
 bool Liquid::handleLiquidBuoyancy(IMatrixAccess& matrix, int x, int y) {
+	// Check if a denser liquid is above this one (should sink down)
 	if (matrix.isInBounds(x, y - 1)) {
 		Element* aboveElem = matrix.getElement(x, y - 1);
 		Liquid* above = dynamic_cast<Liquid*>(aboveElem);
 		if (above && above->getType() != getType()) {
-			if (this->density < above->density) {
+			if (above->density > this->density) {
 				Element::swapElement(matrix, x, y, x, y - 1);
 				return true;
 			}
 		}
 	}
+	
+	// Check if a less dense liquid is below this one (this should sink down)
 	if (matrix.isInBounds(x, y + 1)) {
 		Element* belowElem = matrix.getElement(x, y + 1);
 		Liquid* below = dynamic_cast<Liquid*>(belowElem);
@@ -176,8 +179,19 @@ void Liquid::propagateInertiaToNeighbors(IMatrixAccess& matrix, int x, int y) {
 bool Liquid::canReplaceElementForLiquid(IMatrixAccess& matrix, int posX, int posY) const {
 	if (!matrix.isInBounds(posX, posY)) return false;
 	Element* elem = matrix.getElement(posX, posY);
+	
+	// Can't replace same type
 	if (elem && elem->getType() == getType()) return false;
+	
+	// Can replace empty cells
 	if (matrix.isEmpty(posX, posY)) return true;
+	
+	// Can replace other liquids if this liquid is denser
+	Liquid* otherLiquid = dynamic_cast<Liquid*>(elem);
+	if (otherLiquid && this->density > otherLiquid->density) {
+		return true;
+	}
+	
 	return false;
 }
 
@@ -196,9 +210,35 @@ void Liquid::update(IMatrixAccess& matrix, int x, int y) {
 			|| canReplaceElementForLiquid(matrix, x - 1, y)) {
 			isMoving = true;
 		}
+		// Also start moving if buoyancy forces apply
+		if (matrix.isInBounds(x, y - 1)) {
+			Element* aboveElem = matrix.getElement(x, y - 1);
+			Liquid* above = dynamic_cast<Liquid*>(aboveElem);
+			if (above && above->getType() != getType() && above->density > this->density) {
+				isMoving = true;
+			}
+		}
+		if (matrix.isInBounds(x, y + 1)) {
+			Element* belowElem = matrix.getElement(x, y + 1);
+			Liquid* below = dynamic_cast<Liquid*>(belowElem);
+			if (below && below->getType() != getType() && this->density > below->density) {
+				isMoving = true;
+			}
+		}
 	}
 
 	if (isMoving) {
+		// Handle buoyancy first (most important for liquid-liquid interactions)
+		if (handleLiquidBuoyancy(matrix, x, y)) {
+			movedThisFrame = true;
+			// Reset vertical velocity when buoyancy movement occurs
+			velocity_y = 1.0f;
+			accumulated_y = 0.0f;
+			wasMoving = movedThisFrame;
+			propagateInertiaToNeighbors(matrix, x, y);
+			return;
+		}
+
 		velocity_y = std::clamp(velocity_y + GRAVITY, 0.0f, 10.0f);
 		accumulated_y += velocity_y;
 		int move_y = static_cast<int>(accumulated_y);
@@ -206,16 +246,12 @@ void Liquid::update(IMatrixAccess& matrix, int x, int y) {
 		if (move_y != 0) {
 			if (tryVerticalMove(matrix, x, y, move_y)) {
 				movedThisFrame = true;
+				wasMoving = movedThisFrame;
+				propagateInertiaToNeighbors(matrix, x, y);
 				return;
 			} else {
 				movedThisFrame = handleHorizontalSpreading(matrix, x, y);
-
 			}
-		}
-
-		if (handleLiquidBuoyancy(matrix, x, y)) {
-			movedThisFrame = true;
-			return;
 		}
 
 		// If not moved for two frames, stop moving
