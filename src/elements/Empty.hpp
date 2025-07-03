@@ -7,7 +7,7 @@ class Empty : public Element {
 	public:
 		Empty(int x, int y) : Element(EMPTY, x, y) {}
 
-		void update(IMatrixAccess&, int, int) override {
+		void update(IMatrix&, int, int) override {
 			return;
 		}
 };

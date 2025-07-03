@@ -1,4 +1,4 @@
-// src/elements/IMatrixAccess.hpp
+// src/elements/IMatrix.hpp
 #ifndef IMATRIX_HPP
 #define IMATRIX_HPP
 
@@ -13,9 +13,9 @@ class Element;
 // Interface that provides controlled access to matrix operations
 // without exposing the full CellularMatrix implementation
 //-------------------------------------------
-class IMatrixAccess {
+class IMatrix {
 public:
-    virtual ~IMatrixAccess() = default;
+    virtual ~IMatrix() = default;
     
     // Bounds checking
     virtual bool isInBounds(int x, int y) const = 0;

@@ -40,17 +40,17 @@ bool Element::checkIfUpdated() {
     return false;
 }
 
-void Element::swapElement(IMatrixAccess& matrix, int x1, int y1, int x2, int y2) {
+void Element::swapElement(IMatrix& matrix, int x1, int y1, int x2, int y2) {
     matrix.swapElements(x1, y1, x2, y2);
     matrix.getElement(x2, y2)->setStep(globalStep);
 }
 
 // --- Destroy Element Utility ---
-void Element::destroyElement(IMatrixAccess& matrix, int x, int y) {
+void Element::destroyElement(IMatrix& matrix, int x, int y) {
     matrix.destroyElement(x, y);
 }
 
 // --- Default update ---
-void Element::update(IMatrixAccess&, int, int) {
+void Element::update(IMatrix&, int, int) {
     return;
 }

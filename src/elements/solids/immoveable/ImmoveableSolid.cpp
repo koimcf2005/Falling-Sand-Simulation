@@ -11,6 +11,6 @@
 // ------------------------------------------
 
 // No-op update: Stone does not move or change
-void ImmoveableSolid::update(IMatrixAccess&, int, int) {
+void ImmoveableSolid::update(IMatrix&, int, int) {
 	return;
 }

@@ -19,7 +19,7 @@ public:
 
     // --- Core Interface ---
     ElementType getType() const;
-    virtual void update(IMatrixAccess& matrix, int x, int y) = 0;
+    virtual void update(IMatrix& matrix, int x, int y) = 0;
 
     // --- Step Flag ---
     bool getStep() const;
@@ -45,11 +45,11 @@ protected:
     bool step = false;
 
     // --- Element Management ---
-    static void swapElement(IMatrixAccess& matrix, int x1, int y1, int x2, int y2);
-    static void destroyElement(IMatrixAccess& matrix, int x, int y);
+    static void swapElement(IMatrix& matrix, int x1, int y1, int x2, int y2);
+    static void destroyElement(IMatrix& matrix, int x, int y);
 
     // --- Neighbor/Type Utilities ---
-    static int isInsideElement(IMatrixAccess& matrix, ElementType type, int x, int y);
+    static int isInsideElement(IMatrix& matrix, ElementType type, int x, int y);
     
     template<typename T>
     static bool isInstanceOf(Element* element) {
@@ -70,7 +70,7 @@ protected:
 
     // Returns a vector of pointers to neighboring elements of the specified type
     template<typename T>
-    static std::vector<T*> getNeighborElementsOfType(IMatrixAccess& matrix, ElementType type, int x, int y) {
+    static std::vector<T*> getNeighborElementsOfType(IMatrix& matrix, ElementType type, int x, int y) {
         std::vector<T*> neighbors;
         for (int dx = -1; dx <= 1; ++dx) {
             for (int dy = -1; dy <= 1; ++dy) {

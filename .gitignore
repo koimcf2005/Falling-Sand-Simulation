@@ -2,6 +2,7 @@
 SDL2.dll
 backup_and_zip.sh
 extract_backup.sh
+switch.py
 src/include/
 src/lib
 build/

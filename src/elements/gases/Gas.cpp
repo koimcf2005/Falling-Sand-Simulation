@@ -5,7 +5,7 @@
 //-------------------------------------------
 // Update Behavior
 //-------------------------------------------
-void Gas::update(IMatrixAccess& matrix, int x, int y) {
+void Gas::update(IMatrix& matrix, int x, int y) {
 	if (checkIfUpdated()) return;
 
 	// Lambda: returns true if a cell at (posX, posY) can be replaced (empty or gas)

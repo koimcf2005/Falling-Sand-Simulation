@@ -14,7 +14,7 @@
 //-------------------------------------------
 // Cellular Matrix Class
 //-------------------------------------------
-class CellularMatrix : public IMatrixAccess {
+class CellularMatrix : public IMatrix {
 public:
     //-------------------------------------------
     // Construction/Destruction

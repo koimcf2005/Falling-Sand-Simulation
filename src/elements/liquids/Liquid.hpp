@@ -14,7 +14,7 @@ class Liquid : public Element {
 	public:
 		Liquid(ElementType type, int x, int y) : Element(type, x, y) {}
 		// Update function to be implemented by derived classes
-		void update(IMatrixAccess& matrix, int x, int y) override;
+		void update(IMatrix& matrix, int x, int y) override;
 		
 		ElementType getDissolvedElement() const;
 		void setDissolvedElement(ElementType type);
@@ -39,24 +39,24 @@ class Liquid : public Element {
 		//-------------------------------------------
 		// Dissolved Element Diffusion
 		//-------------------------------------------
-		void diffuseDissolvedElement(IMatrixAccess& matrix, int x, int y);
+		void diffuseDissolvedElement(IMatrix& matrix, int x, int y);
 
 		//-------------------------------------------
 		// Movement/Spreading Logic
 		//-------------------------------------------
-		bool canReplaceElementForLiquid(IMatrixAccess& matrix, int posX, int posY) const;
-		bool tryVerticalMove(IMatrixAccess& matrix, int x, int y, int move_y);
-		bool handleHorizontalSpreading(IMatrixAccess& matrix, int x, int y);
+		bool canReplaceElementForLiquid(IMatrix& matrix, int posX, int posY) const;
+		bool tryVerticalMove(IMatrix& matrix, int x, int y, int move_y);
+		bool handleHorizontalSpreading(IMatrix& matrix, int x, int y);
 
 		//-------------------------------------------
 		// Buoyancy (Liquid-on-Liquid)
 		//-------------------------------------------
-		bool handleLiquidBuoyancy(IMatrixAccess& matrix, int x, int y);
+		bool handleLiquidBuoyancy(IMatrix& matrix, int x, int y);
 
 		//-------------------------------------------
 		// Inertia Propagation
 		//-------------------------------------------
-		void propagateInertiaToNeighbors(IMatrixAccess& matrix, int x, int y);
+		void propagateInertiaToNeighbors(IMatrix& matrix, int x, int y);
 };
 
 #endif

@@ -14,7 +14,7 @@ class Gas : public Element {
 	public:
 		Gas(ElementType type, int x, int y) : Element(type, x, y) {}
 		// Update function to be implemented by derived classes
-		void update(IMatrixAccess& matrix, int x, int y) override;
+		void update(IMatrix& matrix, int x, int y) override;
 		
 	protected:
 		// Gravitational constant affecting the solid
