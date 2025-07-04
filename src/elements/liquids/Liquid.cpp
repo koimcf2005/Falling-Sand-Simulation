@@ -2,9 +2,7 @@
 #include "CellularMatrix.hpp"
 #include "elements/solids/movable/MovableSolid.hpp"
 
-//-------------------------------------------
-// Dissolved Element Accessors
-//-------------------------------------------
+/// ==================== Dissolved Element Accessors ====================
 ElementType Liquid::getDissolvedElement() const {
 	return dissolvedElement;
 }
@@ -15,9 +13,7 @@ void Liquid::setdestroyDissolvedElement(bool value) {
 	destroyDissolvedElement = value;
 }
 
-//-------------------------------------------
-// Dissolved Element Diffusion
-//-------------------------------------------
+/// ==================== Dissolved Element Diffusion ====================
 void Liquid::diffuseDissolvedElement(IMatrix& matrix, int x, int y) {
 	if (dissolvedElement != EMPTY) {
 		std::vector<std::pair<int, int>> neighborCoords;
@@ -42,9 +38,7 @@ void Liquid::diffuseDissolvedElement(IMatrix& matrix, int x, int y) {
 	}
 }
 
-//-------------------------------------------
-// Movement/Spreading Logic
-//-------------------------------------------
+/// ==================== Movement/Spreading Logic ====================
 bool Liquid::tryVerticalMove(IMatrix& matrix, int x, int y, int move_y) {
 	int last_valid_y = y;
 	for (int i = 1; i <= std::abs(move_y); ++i) {
@@ -129,9 +123,7 @@ bool Liquid::handleHorizontalSpreading(IMatrix& matrix, int x, int y) {
 	return moved;
 }
 
-//-------------------------------------------
-// Buoyancy (Liquid-on-Liquid)
-//-------------------------------------------
+/// ==================== Buoyancy (Liquid-on-Liquid) ====================
 bool Liquid::handleLiquidBuoyancy(IMatrix& matrix, int x, int y) {
 	// Check if a denser liquid is above this one (should sink down)
 	if (matrix.isInBounds(x, y - 1)) {
@@ -147,9 +139,7 @@ bool Liquid::handleLiquidBuoyancy(IMatrix& matrix, int x, int y) {
 	return false;
 }
 
-//-------------------------------------------
-// Inertia Propagation
-//-------------------------------------------
+/// ==================== Inertia Propagation ====================
 void Liquid::propagateInertiaToNeighbors(IMatrix& matrix, int x, int y) {
 	MovableSolid* leftNeighbor = nullptr;
 	if (matrix.isInBounds(x - 1, y))
@@ -161,9 +151,7 @@ void Liquid::propagateInertiaToNeighbors(IMatrix& matrix, int x, int y) {
 	if (rightNeighbor != nullptr) rightNeighbor->setMovingByInertia();
 }
 
-//-------------------------------------------
-// Main Update
-//-------------------------------------------
+/// ==================== Update ====================
 bool Liquid::canReplaceElementForLiquid(IMatrix& matrix, int posX, int posY) const {
 	if (!matrix.isInBounds(posX, posY)) return false;
 	Element* elem = matrix.getElement(posX, posY);

@@ -13,7 +13,7 @@ class ElementColors {
 		static SDL_Color getColorByElementType(ElementType type, int x, int y);
 		static void initialize(SDL_Renderer* renderer);
 		
-		private:
+	private:
 		struct ElementColor {
 			SDL_Color color;
 			int offset;
