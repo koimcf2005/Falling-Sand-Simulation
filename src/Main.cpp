@@ -62,17 +62,17 @@ int main(int /* unused */, char* /* unused */[]) {
 	SDL_RenderSetLogicalSize(renderer, RENDER_WIDTH, RENDER_HEIGHT);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");  // Use nearest neighbor scaling
 
-    //-------------------------------------------
-    // UI Setup
-    //-------------------------------------------
-    ElementUI elementUI;
-    if (!elementUI.initialize(renderer, WINDOW_WIDTH, WINDOW_HEIGHT)) {
-        std::cerr << "Failed to initialize Element UI" << std::endl;
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
-    }
+	//-------------------------------------------
+	// UI Setup
+	//-------------------------------------------
+	ElementUI elementUI;
+	if (!elementUI.initialize(renderer, RENDER_WIDTH, RENDER_HEIGHT)) {
+		std::cerr << "Failed to initialize Element UI" << std::endl;
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		SDL_Quit();
+		return -1;
+	}
 
 	//-------------------------------------------
 	// Simulation Setup
@@ -122,10 +122,10 @@ int main(int /* unused */, char* /* unused */[]) {
 		while (SDL_PollEvent(&event)) {
 			// Handle UI events first
 			elementUI.handleEvent(event);
+
 			if (event.type == SDL_QUIT) {
 				running = false;
 			}
-
 			// Track mouse button state
 			else if (event.type == SDL_MOUSEBUTTONDOWN) {
 				if (event.button.button == SDL_BUTTON_LEFT) leftMouseDown = true;
@@ -138,10 +138,10 @@ int main(int /* unused */, char* /* unused */[]) {
 			// Handle keyboard input for Element selection
 			else if (event.type == SDL_KEYDOWN) {
 				switch (event.key.keysym.sym) {
-                    case SDLK_SPACE:
-                        elementUI.toggleVisibility();
-                        std::cout << "UI " << (elementUI.isVisible() ? "shown" : "hidden") << std::endl;
-                        break;
+					case SDLK_SPACE:
+						elementUI.toggleVisibility();
+						std::cout << "UI " << (elementUI.isVisible() ? "shown" : "hidden") << std::endl;
+						break;
 					// Add more keys as needed for different Element types
 				}
 			}
@@ -156,16 +156,21 @@ int main(int /* unused */, char* /* unused */[]) {
 			}
 		}
 
-        // Update selected element from UI
-        selectedElement = elementUI.getSelectedElement();
+		// Update selected element from UI
+		selectedElement = elementUI.getSelectedElement();
 
-        // Update UI with mouse position
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-        elementUI.update(mouseX, mouseY);
+		// Update UI with mouse position (convert to logical coordinates)
+		int mouseX, mouseY;
+		SDL_GetMouseState(&mouseX, &mouseY);
+		int logicalMouseX = mouseX * RENDER_WIDTH / WINDOW_WIDTH;
+		int logicalMouseY = mouseY * RENDER_HEIGHT / WINDOW_HEIGHT;
+		elementUI.update(logicalMouseX, logicalMouseY);
 
-		// Always place particles if mouse button is held down
-		if (leftMouseDown || rightMouseDown) {
+		// Prevent element placement if mouse is over UI
+		bool mouseOverUI = elementUI.isMouseOverUI(logicalMouseX, logicalMouseY);
+
+		// Always place particles if mouse button is held down and not over UI
+		if ((leftMouseDown || rightMouseDown) && !mouseOverUI) {
 			int mouseX, mouseY;
 			SDL_GetMouseState(&mouseX, &mouseY);
 			int gridX = mouseX * RENDER_WIDTH / WINDOW_WIDTH;
@@ -240,26 +245,26 @@ int main(int /* unused */, char* /* unused */[]) {
 			SDL_SetWindowTitle(window, title.c_str());
 		}
 
-        //----------------
-        // Rendering
-        //----------------
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderClear(renderer);
-        matrix.render(renderer);
-        
-        // Render UI on top
-        elementUI.render(renderer);
-        
-        SDL_RenderPresent(renderer);
+		//----------------
+		// Rendering
+		//----------------
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderClear(renderer);
+		matrix.render(renderer);
+		
+		// Render UI on top
+		elementUI.render(renderer);
+		
+		SDL_RenderPresent(renderer);
 	}
 
-    //-------------------------------------------
-    // Cleanup
-    //-------------------------------------------
-    elementUI.cleanup();
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+	//-------------------------------------------
+	// Cleanup
+	//-------------------------------------------
+	elementUI.cleanup();
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 
 	return 0;
 }
