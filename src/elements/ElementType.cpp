@@ -8,22 +8,24 @@
 #include "liquids/Water.hpp"
 #include "liquids/Oil.hpp"
 #include "gases/Smoke.hpp"
+#include "gases/Steam.hpp"
 #include "Empty.hpp"
 
 //-------------------------------------------
 // Factory Function Implementation
 //-------------------------------------------
 Element* createElementFromType(ElementType type, int x, int y) {
-    switch (type) {
-        case SAND: return new Sand(x, y);
+	switch (type) {
+		case SAND: return new Sand(x, y);
 		case DIRT: return new Dirt(x, y);
 		case COAL: return new Coal(x, y);
 		case SALT: return new Salt(x, y);
-        case STONE: return new Stone(x, y);
+		case STONE: return new Stone(x, y);
 		case WOOD: return new Wood(x, y);
 		case WATER: return new Water(x, y);
 		case OIL: return new Oil(x, y);
 		case SMOKE: return new Smoke(x, y);
-        default: return new Empty(x, y);
-    }
+		case STEAM: return new Steam(x, y);
+		default: return new Empty(x, y);
+	}
 }

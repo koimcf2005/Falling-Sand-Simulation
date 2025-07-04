@@ -41,7 +41,7 @@ class ElementColors {
 		static const ElementColor C_STONE;
 		static const ElementColor C_WOOD;
 		static const ElementColor C_SMOKE;
-		static const ElementColor C_NOT_MOVING;
+		static const ElementColor C_STEAM;
 };
 
 #endif

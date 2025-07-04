@@ -8,4 +8,4 @@ public:
 	Smoke(int x, int y) : Gas(SMOKE, x, y) {}
 };
 
-#endif // SAND_HPP
+#endif // SMOKE_HPP

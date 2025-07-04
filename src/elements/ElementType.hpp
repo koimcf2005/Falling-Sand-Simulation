@@ -5,8 +5,8 @@
 // Element Types
 //-------------------------------------------
 enum ElementType {
-    EMPTY,
-    SAND,
+	EMPTY,
+	SAND,
 	DIRT,
 	COAL,
 	SALT,
@@ -15,7 +15,7 @@ enum ElementType {
 	WATER,
 	OIL,
 	SMOKE,
-	NOT_MOVING
+	STEAM
 };
 
 // Forward declare Element class since we only need the pointer type

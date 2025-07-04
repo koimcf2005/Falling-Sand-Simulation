@@ -157,6 +157,10 @@ int main(int /* unused */, char* /* unused */[]) {
 						selectedElement = SMOKE;
 						std::cout << "Selected Smoke\n";
 						break;
+					case SDLK_0:
+						selectedElement = STEAM;
+						std::cout << "Selected Steam\n";
+						break;
 					// Add more keys as needed for different Element types
 				}
 			}
