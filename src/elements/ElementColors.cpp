@@ -32,9 +32,9 @@ void ElementColors::initialize(SDL_Renderer* /*renderer*/) {
 	colorMap[SMOKE] = C_SMOKE;
 	colorMap[STEAM] = C_STEAM;
 
-	SDL_Surface* stone_texture = IMG_Load("src/elements/textures/stone.png");
+	SDL_Surface* stone_texture = IMG_Load("assets/textures/stone.png");
 	if (stone_texture) textureMap[STONE] = stone_texture;
-	SDL_Surface* wood_texture = IMG_Load("src/elements/textures/wood.png");
+	SDL_Surface* wood_texture = IMG_Load("assets/textures/wood.png");
 	if (wood_texture) textureMap[WOOD] = wood_texture;
 }
 
