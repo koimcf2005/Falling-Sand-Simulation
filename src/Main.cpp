@@ -142,7 +142,6 @@ int main(int /* unused */, char* /* unused */[]) {
 						elementUI.toggleVisibility();
 						std::cout << "UI " << (elementUI.isVisible() ? "shown" : "hidden") << std::endl;
 						break;
-					// Add more keys as needed for different Element types
 				}
 			}
 			// Handle scroll wheel to change area size
