@@ -1,17 +1,41 @@
-#ifndef ELEMENT_COLORS_HPP
-#define ELEMENT_COLORS_HPP
+#ifndef ELEMENT_FACTORY_HPP
+#define ELEMENT_FACTORY_HPP
 
 #include <map>
 #include <random>
 #include <algorithm>
 #include <SDL2/SDL.h>
-#include "ElementType.hpp"
 
-class ElementColors {
+//-------------------------------------------
+// Element Types
+//-------------------------------------------
+enum ElementType {
+	EMPTY,
+	SAND,
+	DIRT,
+	COAL,
+	SALT,
+	STONE,
+	WOOD,
+	WATER,
+	OIL,
+	SMOKE,
+	STEAM
+};
+
+// Forward declare Element class since we only need the pointer type
+class Element;
+
+//-------------------------------------------
+// Factory Function Declaration
+//-------------------------------------------
+Element* createElementFromType(ElementType type, int x, int y);
+
+class ElementFactory {
 	public:
 		// All methods and members are static
 		static SDL_Color getColorByElementType(ElementType type, int x, int y);
-		static void initialize(SDL_Renderer* renderer);
+		static void initialize();
 		
 	private:
 		struct ElementColor {
@@ -44,4 +68,4 @@ class ElementColors {
 		static const ElementColor C_STEAM;
 };
 
-#endif
+#endif // ELEMENT_factory_HPP

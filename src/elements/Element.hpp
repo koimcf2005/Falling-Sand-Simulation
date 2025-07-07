@@ -8,8 +8,7 @@
 #include <random>
 #include <algorithm>
 #include <unordered_map>
-#include "ElementType.hpp"
-#include "ElementColors.hpp"
+#include "ElementFactory.hpp"
 #include "../IMatrix.hpp"
 
 /**

@@ -60,7 +60,7 @@ void ElementUI::cleanup() {
 }
 
 void ElementUI::addElement(ElementType type, const std::string& name) {
-	SDL_Color color = ElementColors::getColorByElementType(type, 0, 0);
+	SDL_Color color = ElementFactory::getColorByElementType(type, 0, 0);
 	buttons.emplace_back(type, name, color);
 	updateButtonPositions();
 }

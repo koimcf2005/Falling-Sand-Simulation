@@ -9,7 +9,7 @@ bool Element::globalStep = false;
 // ========= Constructor =========
 Element::Element(ElementType type, int x, int y)
 	: type(type),
-	color(ElementColors::getColorByElementType(type, x, y)),
+	color(ElementFactory::getColorByElementType(type, x, y)),
 	backup_color(color)
 {}
 

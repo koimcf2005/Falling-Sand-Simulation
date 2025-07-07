@@ -1,7 +1,7 @@
 // src/Main.cpp
 #include <SDL2/SDL.h>
 #include "elements/Element.hpp"
-#include "elements/ElementColors.hpp"
+#include "elements/ElementFactory.hpp"
 #include "CellularMatrix.hpp"
 #include "ui/ElementUI.hpp"
 #include <iostream>
@@ -56,7 +56,7 @@ int main(int /* unused */, char* /* unused */[]) {
 		return -1;
 	}
 
-	ElementColors::initialize(renderer);
+	ElementFactory::initialize();
 
 	// Set up renderer properties for pixel-perfect scaling
 	SDL_RenderSetLogicalSize(renderer, RENDER_WIDTH, RENDER_HEIGHT);

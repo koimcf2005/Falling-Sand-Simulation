@@ -6,8 +6,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <vector>
 #include <string>
-#include "../elements/ElementType.hpp"
-#include "../elements/ElementColors.hpp"
+#include "../elements/ElementFactory.hpp"
 
 struct ElementButton {
 	ElementType type;

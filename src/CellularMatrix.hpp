@@ -3,8 +3,7 @@
 #define CELLULAR_MATRIX_HPP
 
 #include "./elements/Element.hpp"
-#include "./elements/ElementType.hpp"
-#include "./elements/ElementColors.hpp"
+#include "./elements/ElementFactory.hpp"
 #include "IMatrix.hpp"
 #include <SDL2/SDL.h>
 #include <vector>
