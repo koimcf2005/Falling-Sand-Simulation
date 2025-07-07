@@ -48,10 +48,21 @@ class ElementFactory {
 			std::function<Element*(int, int)> factory;
 			std::string texturePath;
 			
-			ElementInfo() : name(""), color{0, 0, 0, 0}, colorOffset(0), texturePath("") {}
-			ElementInfo(const std::string& n, const SDL_Color& c, int offset, 
-					   std::function<Element*(int, int)> f, const std::string& texture = "")
-				: name(n), color(c), colorOffset(offset), factory(f), texturePath(texture) {}
+			ElementInfo()
+				: name(""),
+				color{0, 0, 0, 0},
+				colorOffset(0),
+				texturePath("")
+			{}
+
+			ElementInfo(const std::string& n, const SDL_Color& c, int offset,
+						std::function<Element*(int, int)> f, const std::string& texture = "")
+				: name(n),
+				color(c),
+				colorOffset(offset),
+				factory(f),
+				texturePath(texture)
+			{}
 		};
 		
 		static SDL_Color getTextureColor(ElementType type, SDL_Surface* surface, int x, int y);
@@ -66,8 +77,8 @@ class ElementFactory {
 		// Registration helper
 		template<typename T>
 		static void registerElement(ElementType type, const std::string& name, 
-								   const SDL_Color& color, int colorOffset,
-								   const std::string& texturePath = "");
+									const SDL_Color& color, int colorOffset,
+									const std::string& texturePath = "");
 };
 
 #endif // ELEMENT_FACTORY_HPP
