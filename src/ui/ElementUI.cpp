@@ -12,42 +12,42 @@ ElementUI::~ElementUI() {
 }
 
 bool ElementUI::initialize(SDL_Renderer* r, int winWidth, int winHeight) {
-    renderer = r;
-    windowWidth = winWidth;
-    windowHeight = winHeight;
-    
-    // Initialize SDL_ttf
-    if (TTF_Init() == -1) {
-        std::cerr << "Failed to initialize SDL_ttf: " << TTF_GetError() << std::endl;
-        return false;
-    }
-    
-    // Load font (smaller size for tooltip)
-    font = TTF_OpenFont("assets/fonts/PublicPixel.ttf", TOOLTIP_FONT_SIZE);
-    if (!font) {
-        std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
-        return false;
-    }
-    
-    // Automatically add all registered elements from ElementFactory
-    std::vector<ElementType> registeredElements = ElementFactory::getRegisteredElements();
-    for (ElementType type : registeredElements) {
-        // Skip EMPTY element in UI
-        if (type != EMPTY) {
-            std::string name = ElementFactory::getElementName(type);
-            SDL_Color color = ElementFactory::getColorByElementType(type, 0, 0);
-            buttons.emplace_back(type, name, color);
-        }
-    }
-    
-    // Set first element as selected
-    if (!buttons.empty()) {
-        buttons[0].isSelected = true;
-        selectedElement = buttons[0].type;
-    }
-    
-    updateButtonPositions();
-    return true;
+	renderer = r;
+	windowWidth = winWidth;
+	windowHeight = winHeight;
+	
+	// Initialize SDL_ttf
+	if (TTF_Init() == -1) {
+		std::cerr << "Failed to initialize SDL_ttf: " << TTF_GetError() << std::endl;
+		return false;
+	}
+	
+	// Load font (smaller size for tooltip)
+	font = TTF_OpenFont("assets/fonts/PublicPixel.ttf", TOOLTIP_FONT_SIZE);
+	if (!font) {
+		std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
+		return false;
+	}
+	
+	// Automatically add all registered elements from ElementFactory
+	std::vector<ElementType> registeredElements = ElementFactory::getRegisteredElements();
+	for (ElementType type : registeredElements) {
+		// Skip EMPTY element in UI
+		if (type != EMPTY) {
+			std::string name = ElementFactory::getElementName(type);
+			SDL_Color color = ElementFactory::getColorByElementType(type, 0, 0);
+			buttons.emplace_back(type, name, color);
+		}
+	}
+	
+	// Set first element as selected
+	if (!buttons.empty()) {
+		buttons[0].isSelected = true;
+		selectedElement = buttons[0].type;
+	}
+	
+	updateButtonPositions();
+	return true;
 }
 
 void ElementUI::cleanup() {

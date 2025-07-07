@@ -56,7 +56,7 @@ const Element* CellularMatrix::getElement(int x, int y) const {
 
 void CellularMatrix::destroyElement(int x, int y) {
 	if (matrix[y][x]->getType() != EMPTY) {
-		Element* emptyElement = createElementFromType(EMPTY, x, y);
+		Element* emptyElement = ElementFactory::createElementFromType(EMPTY, x, y);
 		Element* oldElement = matrix[y][x];
 		matrix[y][x] = emptyElement;
 		delete oldElement;
@@ -92,7 +92,7 @@ void CellularMatrix::placeElement(int x, int y, ElementType type) {
 			return;
 		}
 		
-		Element* newElement = createElementFromType(type, x, y);
+		Element* newElement = ElementFactory::createElementFromType(type, x, y);
 		delete matrix[y][x];
 		matrix[y][x] = newElement;
 	}
