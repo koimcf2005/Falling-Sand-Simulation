@@ -1,10 +1,4 @@
-// -------------------------------------------
-// MovableSolid.hpp
-// -------------------------------------------
-// Base class for all movable solid elements (e.g., sand, powder).
-// Provides velocity and movement accumulation for smooth simulation.
-// Does not implement update logic directly; intended for inheritance.
-// -------------------------------------------
+// src/elements/solids/movable/MovableSolid.hpp
 #ifndef MOVABLE_SOLID_HPP
 #define MOVABLE_SOLID_HPP
 
@@ -14,35 +8,33 @@
 /**
  * @brief Base class for all movable solid elements (e.g., sand, powder).
  * 
- * Provides velocity and movement accumulation for smooth simulation.
- * Does not implement update logic directly; intended for inheritance.
+ * Provides horizontal velocity and advanced movement simulation.
+ * Does not implement main update logic; designed to be extended.
  */
 class MovableSolid : public Solid {
 public:
-	/// ==================== Construction/Destruction ====================
+	// ========= Constructor / Destructor =========
 	MovableSolid(ElementType type, int x, int y) : Solid(type, x, y) {}
+	virtual ~MovableSolid() = default;
 
-	/// ==================== Core Interface ====================
+	// ========= Core Interface =========
 	void update(IMatrix& matrix, int x, int y) override;
 
-	void setMovingByInertia();
+	// ========= Movement / Behavior =========
+	bool canReplaceElement(IMatrix& matrix, int x, int y) const override;
+	void handleWhileGrounded(IMatrix& matrix, int x, int y) override;
 
 protected:
-	/// ==================== Utilities ====================
-	bool canReplaceElement(IMatrix& matrix, int x, int y) const;
-	bool handleDissolving(IMatrix& matrix, int x, int y);
-	void handleDensity(IMatrix& matrix, int x, int y);
-	void affectAdjacentNeighbors(IMatrix& matrix, int x, int y);
+	// ========= Physical Response =========
+	void handleBuoyancy(IMatrix& matrix, int x, int y) override;
+	void applyAdjacentNeighborEffect() override;
 
-	/// ==================== Physical Properties ====================
-	const float GRAVITY = 0.1f;      ///< Gravitational constant affecting the solid
-	float velocity_y = 1.0f;         ///< Vertical velocity
-	float velocity_x = 0.0f;         ///< Horizontal velocity
-	float accumulated_y = 0.0f;      ///< Accumulated vertical movement
-	float accumulated_x = 0.0f;      ///< Accumulated horizontal movement
-	float friction = 0.5f;           ///< Friction
-	float absorption = 0.5f;         ///< Absorption
-	float inertialResistance = 0.5f; ///< Resistance to inertia
+	// ========= Special Interaction =========
+	bool getShouldDissolve(IMatrix& matrix, int x, int y);
+
+	// ========= Horizontal Motion Properties =========
+	float velocity_x = 0.0f;        ///< Horizontal velocity
+	float accumulated_x = 0.0f;     ///< Accumulated horizontal movement
 };
 
 #endif // MOVABLE_SOLID_HPP

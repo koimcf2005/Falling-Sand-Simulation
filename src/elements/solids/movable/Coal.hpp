@@ -10,7 +10,7 @@ public:
 		velocity_x = 0.0f;
 		friction = 0.9f;
 		absorption = 0.1f;
-		inertialResistance = 0.85f;
+		inertialResistance = 0.4f;
 		density = 1.0f;
 	}
 };

@@ -19,7 +19,11 @@
 class ImmoveableSolid : public Solid {
 public:
 	/// ==================== Construction/Destruction ====================
-	ImmoveableSolid(ElementType type, int x, int y) : Solid(type, x, y) {}
+	ImmoveableSolid(ElementType type, int x, int y) : Solid(type, x, y) {
+		wasMoving = false;
+		isMoving = false;
+		movedThisFrame = false;
+	}
 
 	/// ==================== Core Interface ====================
 	void update(IMatrix& matrix, int x, int y) override;

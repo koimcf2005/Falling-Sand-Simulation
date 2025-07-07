@@ -15,7 +15,7 @@ public:
 		dissolveChances = {
 			{ WATER, 0.01f }
 		};
-		dissolveThreshold = 1;
+		dissolveThreshold = 3;
 	}
 };
 

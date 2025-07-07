@@ -19,25 +19,25 @@ void Gas::update(IMatrix& matrix, int x, int y) {
 
 	// Fallback: Try to move straight up by 1 cell
 	if (dist(rng) > chanceOfHorizontal && canReplaceElement(x, y - 1)) {
-		std::swap(matrix.getElement(x, y), matrix.getElement(x, y - 1));
+		Element::swapElements(matrix, x, y, x, y - 1);
 	}
 	else {
 		int dir = getRandomDirection();
 		// Try moving diagonally up-left or up-right (randomized)
 		if (canReplaceElement(x + dir, y - 1)) {
-			std::swap(matrix.getElement(x, y), matrix.getElement(x + dir, y - 1));
+			Element::swapElements(matrix, x, y, x + dir, y - 1);
 		}
 		else if (canReplaceElement(x - dir, y - 1)) {
-			std::swap(matrix.getElement(x, y), matrix.getElement(x - dir, y - 1));
+			Element::swapElements(matrix, x, y, x - dir, y - 1);
 		}
 		else if (canReplaceElement(x - dir, y)) {
-			std::swap(matrix.getElement(x, y), matrix.getElement(x - dir, y));
+			Element::swapElements(matrix, x, y, x - dir, y);
 		}
 		else if (canReplaceElement(x + dir, y)) {
-			std::swap(matrix.getElement(x, y), matrix.getElement(x + dir, y));
+			Element::swapElements(matrix, x, y, x + dir, y);
 		}
 		else if (canReplaceElement(x, y - 1)) {
-			std::swap(matrix.getElement(x, y), matrix.getElement(x, y - 1));
+			Element::swapElements(matrix, x, y, x, y - 1);
 		}
 	}
 }

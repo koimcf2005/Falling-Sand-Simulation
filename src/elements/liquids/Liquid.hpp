@@ -1,58 +1,46 @@
-// -------------------------------------------
-// Liquid.hpp
-// -------------------------------------------
-// Base class for all liquid elements (e.g., water, lava).
-// Provides velocity and movement accumulation for smooth simulation.
-// Does not implement update logic directly; intended for inheritance.
-// -------------------------------------------
+// src/elements/liquids/Liquid.hpp
 #ifndef LIQUID_HPP
 #define LIQUID_HPP
 
 #include "Element.hpp"
 
 /**
- * @brief Base class for all liquid elements (e.g., water, lava).
- * 
- * Provides velocity and movement accumulation for smooth simulation.
- * Does not implement update logic directly; intended for inheritance.
+ * @brief Abstract base class for all liquid elements (e.g., water, lava).
+ *
+ * Provides velocity, dispersion, and dissolved element behavior.
+ * This class is not meant to be instantiated directly.
  */
 class Liquid : public Element {
 public:
-	/// ==================== Construction/Destruction ====================
+	// ========== Construction ==========
 	Liquid(ElementType type, int x, int y) : Element(type, x, y) {}
+	virtual ~Liquid() = default;
 
-	/// ==================== Core Interface ====================
+	// ========== Core Interface ==========
 	void update(IMatrix& matrix, int x, int y) override;
+	bool canReplaceElement(IMatrix& matrix, int x, int y) const override;
 
-	/// ==================== Dissolved Element Accessors ====================
+	// ========== Dissolved Element Accessors ==========
 	ElementType getDissolvedElement() const;
 	void setDissolvedElement(ElementType type);
 	void setdestroyDissolvedElement(bool value);
 
 protected:
-	/// ==================== Physical Properties ====================
-	const float GRAVITY = 0.1f;        ///< Gravitational constant affecting the liquid
-	float velocity_y = 1.0f;           ///< Vertical velocity
-	float velocity_x = 0.0f;           ///< Horizontal velocity
-	float accumulated_y = 0.0f;        ///< Accumulated vertical movement
-	float accumulated_x = 0.0f;        ///< Accumulated horizontal movement
-	int dispersionRate = 10;           ///< Dispersion rate for spreading
-	ElementType dissolvedElement = EMPTY; ///< Dissolved element type
-	bool destroyDissolvedElement = false; ///< Flag for destroying dissolved element
+	// ========== Physical Properties ==========
+	float velocity_x = 0.0f;                ///< Horizontal velocity
+	float accumulated_x = 0.0f;             ///< Horizontal movement accumulator
+	int dispersionRate = 10;                ///< Max distance a liquid can spread
+	ElementType dissolvedElement = EMPTY;   ///< Currently dissolved element (if any)
+	bool destroyDissolvedElement = false;   ///< Should remove dissolved element on next update
 
-	/// ==================== Dissolved Element Diffusion ====================
+	// ========== Motion & Interaction ==========
+	void handleHorizontalSpreading(IMatrix& matrix, int x, int y);
+	void handleBuoyancy(IMatrix& matrix, int x, int y) override;
+	void applyAdjacentNeighborEffect() override;
+	void handleWhileGrounded(IMatrix& matrix, int x, int y) override;
+
+	// ========== Diffusion ==========
 	void diffuseDissolvedElement(IMatrix& matrix, int x, int y);
-
-	/// ==================== Movement/Spreading Logic ====================
-	bool canReplaceElementForLiquid(IMatrix& matrix, int posX, int posY) const;
-	bool tryVerticalMove(IMatrix& matrix, int x, int y, int move_y);
-	bool handleHorizontalSpreading(IMatrix& matrix, int x, int y);
-
-	/// ==================== Buoyancy (Liquid-on-Liquid) ====================
-	bool handleLiquidBuoyancy(IMatrix& matrix, int x, int y);
-
-	/// ==================== Inertia Propagation ====================
-	void propagateInertiaToNeighbors(IMatrix& matrix, int x, int y);
 };
 
 #endif // LIQUID_HPP
