@@ -16,6 +16,7 @@
 #include "src/elements/gases/Smoke.hpp"
 #include "src/elements/gases/Steam.hpp"
 #include "src/elements/EmptyElement.hpp"
+#include "src/elements/PhysicsParticle.hpp"
 
 // ===============================
 // Factory Function Implementation
@@ -78,6 +79,7 @@ void ElementFactory::initialize() {
 	registerElement<Wood>(WOOD, "Wood", {134, 97, 45, 255}, 5, "assets/textures/wood.png");
 	registerElement<Smoke>(SMOKE, "Smoke", {33, 33, 33, 125}, 1);
 	registerElement<Steam>(STEAM, "Steam", {100, 100, 100, 125}, 1);
+	registerElement<PhysicsParticle>(PHYSICS_PARTICLE, "Physics Particle", {255, 255, 255, 255}, 0);
 
 	// Load textures for elements that have a valid texture path
 	for (const auto& [type, info] : elementRegistry) {

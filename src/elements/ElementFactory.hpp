@@ -23,7 +23,8 @@ enum ElementType {
 	WATER,
 	OIL,
 	SMOKE,
-	STEAM
+	STEAM,
+	PHYSICS_PARTICLE
 };
 
 // Forward declare Element class since we only need the pointer type

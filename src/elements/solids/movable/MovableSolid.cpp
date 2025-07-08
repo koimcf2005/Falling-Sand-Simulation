@@ -3,6 +3,7 @@
 #include "src/core/CellularMatrix.hpp"
 #include "src/elements/gases/Gas.hpp"
 #include "src/elements/liquids/Liquid.hpp"
+#include "src/elements/PhysicsParticle.hpp"
 
 // ========= Update Loop =========
 void MovableSolid::update(IMatrix& matrix, int x, int y) {
@@ -30,41 +31,57 @@ void MovableSolid::update(IMatrix& matrix, int x, int y) {
 
 // ========= Ground Behavior =========
 void MovableSolid::handleWhileGrounded(IMatrix& matrix, int x, int y) {
-	if (!isMoving) return;
-	// Blocked vertically: try to slide or move horizontally
-	int dir = getRandomDirection(); // Randomly pick left or right
-	// If falling fast enough, set horizontal velocity
-	if (velocity_y >= 1.0f / absorption) {
-		velocity_x = velocity_y * absorption * dir;
-	}
-	// Try to slide diagonally (sand piling)
-	if (canReplaceElement(matrix, x + dir, y + 1)) {
-		Element::swapElements(matrix, x, y, x + dir, y + 1);
-		affectAdjacentNeighbors(matrix, x, y);
-		velocity_x += 0.5f * dir;
-	}
-	else if (canReplaceElement(matrix, x - dir, y + 1)) {
-		Element::swapElements(matrix, x, y, x - dir, y + 1);
-		affectAdjacentNeighbors(matrix, x, y);
-		velocity_x += 0.5f * dir;
-	}
-	// Try to move horizontally as far as possible using velocity_x
-	int horiz_dir = (velocity_x > 0) ? 1 : (velocity_x < 0) ? -1 : 0;
-	int max_steps = std::fabs(static_cast<int>(velocity_x));
-	int last_valid_x = x;
-	for (int i = 1; i <= max_steps; ++i) {
-		int target_x = x + i * horiz_dir;
-		if (canReplaceElement(matrix, target_x, y)) {
-			last_valid_x = target_x;
-		} else {
-			break;
-		}
-	}
-	if (last_valid_x != x) {
-		Element::swapElements(matrix, x, y, last_valid_x, y);
-		affectAdjacentNeighbors(matrix, x, y);
-		velocity_x *= friction;
-	}
+    if (!isMoving) return;
+    
+    // Check if we hit the ground at high velocity - if so, bounce using PhysicsParticle
+    static constexpr float BOUNCE_VELOCITY_THRESHOLD = 3.0f;
+    if (velocity_y >= BOUNCE_VELOCITY_THRESHOLD) {
+        // Create a PhysicsParticle to handle the bouncing
+        PhysicsParticle* particle = new PhysicsParticle(getType(), x, y, 
+                                                       velocity_x * 0.5f,  // Some horizontal velocity from impact
+                                                       -velocity_y * 0.6f); // Bounce up with damping
+        
+        // Replace current element with the physics particle
+        Element* currentElement = matrix.getElement(x, y);
+        matrix.getElement(x, y) = particle;
+        delete currentElement;
+        return;
+    }
+    
+    // Blocked vertically: try to slide or move horizontally
+    int dir = getRandomDirection(); // Randomly pick left or right
+    // If falling fast enough, set horizontal velocity
+    if (velocity_y >= 1.0f / absorption) {
+        velocity_x = velocity_y * absorption * dir;
+    }
+    // Try to slide diagonally (sand piling)
+    if (canReplaceElement(matrix, x + dir, y + 1)) {
+        Element::swapElements(matrix, x, y, x + dir, y + 1);
+        affectAdjacentNeighbors(matrix, x, y);
+        velocity_x += 0.5f * dir;
+    }
+    else if (canReplaceElement(matrix, x - dir, y + 1)) {
+        Element::swapElements(matrix, x, y, x - dir, y + 1);
+        affectAdjacentNeighbors(matrix, x, y);
+        velocity_x += 0.5f * dir;
+    }
+    // Try to move horizontally as far as possible using velocity_x
+    int horiz_dir = (velocity_x > 0) ? 1 : (velocity_x < 0) ? -1 : 0;
+    int max_steps = std::fabs(static_cast<int>(velocity_x));
+    int last_valid_x = x;
+    for (int i = 1; i <= max_steps; ++i) {
+        int target_x = x + i * horiz_dir;
+        if (canReplaceElement(matrix, target_x, y)) {
+            last_valid_x = target_x;
+        } else {
+            break;
+        }
+    }
+    if (last_valid_x != x) {
+        Element::swapElements(matrix, x, y, last_valid_x, y);
+        affectAdjacentNeighbors(matrix, x, y);
+        velocity_x *= friction;
+    }
 }
 
 // ========= Buoyancy Logic =========
