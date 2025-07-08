@@ -1,7 +1,7 @@
 #ifndef STEAM_HPP
 #define STEAM_HPP
 
-#include "Gas.hpp"
+#include "src/elements/gases/Gas.hpp"
 
 class Steam : public Gas {
 public:

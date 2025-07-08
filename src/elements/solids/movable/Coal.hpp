@@ -1,7 +1,7 @@
 #ifndef COAL_HPP
 #define COAL_HPP
 
-#include "MovableSolid.hpp"
+#include "src/elements/solids/movable/MovableSolid.hpp"
 
 class Coal : public MovableSolid {
 public:

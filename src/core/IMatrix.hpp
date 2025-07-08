@@ -2,7 +2,7 @@
 #ifndef IMATRIX_HPP
 #define IMATRIX_HPP
 
-#include "./elements/ElementFactory.hpp"
+#include "src/elements/ElementFactory.hpp"
 
 // Forward declaration
 class Element;

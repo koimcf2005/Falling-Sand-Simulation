@@ -8,7 +8,7 @@
 #ifndef IMMOVEABLE_SOLID_HPP
 #define IMMOVEABLE_SOLID_HPP
 
-#include "Solid.hpp"
+#include "src/elements/solids/Solid.hpp"
 
 /**
  * @brief Abstract base class for all immoveable (static) solid elements in the simulation.

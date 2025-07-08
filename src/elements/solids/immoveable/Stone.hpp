@@ -1,7 +1,7 @@
 #ifndef STONE_HPP
 #define STONE_HPP
 
-#include "ImmoveableSolid.hpp"
+#include "src/elements/solids/immoveable/ImmoveableSolid.hpp"
 
 class Stone : public ImmoveableSolid {
 public:

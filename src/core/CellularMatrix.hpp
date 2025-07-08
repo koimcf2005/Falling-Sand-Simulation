@@ -2,9 +2,9 @@
 #ifndef CELLULAR_MATRIX_HPP
 #define CELLULAR_MATRIX_HPP
 
-#include "./elements/Element.hpp"
-#include "./elements/ElementFactory.hpp"
-#include "IMatrix.hpp"
+#include "src/elements/Element.hpp"
+#include "src/elements/ElementFactory.hpp"
+#include "src/core/IMatrix.hpp"
 #include <SDL2/SDL.h>
 #include <vector>
 #include <iostream>

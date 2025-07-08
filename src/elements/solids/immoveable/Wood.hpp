@@ -1,7 +1,7 @@
 #ifndef WOOD_HPP
 #define WOOD_HPP
 
-#include "ImmoveableSolid.hpp"
+#include "src/elements/solids/immoveable/ImmoveableSolid.hpp"
 
 class Wood : public ImmoveableSolid {
 public:

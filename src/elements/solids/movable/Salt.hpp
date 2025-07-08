@@ -1,7 +1,7 @@
 #ifndef SALT_HPP
 #define SALT_HPP
 
-#include "MovableSolid.hpp"
+#include "src/elements/solids/movable/MovableSolid.hpp"
 
 class Salt : public MovableSolid {
 public:

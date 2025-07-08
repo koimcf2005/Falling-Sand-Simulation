@@ -1,7 +1,7 @@
 #ifndef EMPTY_HPP
 #define EMPTY_HPP
 
-#include "Element.hpp"
+#include "src/elements/Element.hpp"
 
 class Empty : public Element {
 	public:

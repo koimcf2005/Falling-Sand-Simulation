@@ -2,7 +2,7 @@
 #ifndef LIQUID_HPP
 #define LIQUID_HPP
 
-#include "Element.hpp"
+#include "src/elements/Element.hpp"
 
 /**
  * @brief Abstract base class for all liquid elements (e.g., water, lava).

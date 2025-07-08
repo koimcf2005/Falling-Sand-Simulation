@@ -1,7 +1,7 @@
 #ifndef OIL_HPP
 #define OIL_HPP
 
-#include "Liquid.hpp"
+#include "src/elements/liquids/Liquid.hpp"
 
 class Oil : public Liquid {
 public:

@@ -1,6 +1,6 @@
-#include "Liquid.hpp"
-#include "CellularMatrix.hpp"
-#include "elements/solids/movable/MovableSolid.hpp"
+#include "src/core/CellularMatrix.hpp"
+#include "src/elements/liquids/Liquid.hpp"
+#include "src/elements/solids/movable/MovableSolid.hpp"
 
 /// ==================== Dissolved Element Accessors ====================
 ElementType Liquid::getDissolvedElement() const {

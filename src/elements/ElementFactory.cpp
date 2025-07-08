@@ -5,17 +5,17 @@
 #include <iostream>
 
 // Element class includes
-#include "solids/movable/Sand.hpp"
-#include "solids/movable/Dirt.hpp"
-#include "solids/movable/Coal.hpp"
-#include "solids/movable/Salt.hpp"
-#include "solids/immoveable/Stone.hpp"
-#include "solids/immoveable/Wood.hpp"
-#include "liquids/Water.hpp"
-#include "liquids/Oil.hpp"
-#include "gases/Smoke.hpp"
-#include "gases/Steam.hpp"
-#include "Empty.hpp"
+#include "src/elements/solids/movable/Sand.hpp"
+#include "src/elements/solids/movable/Dirt.hpp"
+#include "src/elements/solids/movable/Coal.hpp"
+#include "src/elements/solids/movable/Salt.hpp"
+#include "src/elements/solids/immoveable/Stone.hpp"
+#include "src/elements/solids/immoveable/Wood.hpp"
+#include "src/elements/liquids/Water.hpp"
+#include "src/elements/liquids/Oil.hpp"
+#include "src/elements/gases/Smoke.hpp"
+#include "src/elements/gases/Steam.hpp"
+#include "src/elements/EmptyElement.hpp"
 
 // ===============================
 // Factory Function Implementation

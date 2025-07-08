@@ -1,8 +1,8 @@
 // src/elements/solids/movable/MovableSolid.cpp
-#include "MovableSolid.hpp"
-#include "CellularMatrix.hpp"
-#include "elements/gases/Gas.hpp"
-#include "elements/liquids/Liquid.hpp"
+#include "src/elements/solids/movable/MovableSolid.hpp"
+#include "src/core/CellularMatrix.hpp"
+#include "src/elements/gases/Gas.hpp"
+#include "src/elements/liquids/Liquid.hpp"
 
 // ========= Update Loop =========
 void MovableSolid::update(IMatrix& matrix, int x, int y) {

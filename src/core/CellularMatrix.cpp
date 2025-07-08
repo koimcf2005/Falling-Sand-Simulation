@@ -1,6 +1,6 @@
 // src/CellularMatrix.cpp
-#include "CellularMatrix.hpp"
-#include "elements/Empty.hpp"
+#include "src/core/CellularMatrix.hpp"
+#include "src/elements/EmptyElement.hpp"
 #include <algorithm>
 #include <random>
 #include <utility>

@@ -1,7 +1,7 @@
 #ifndef DIRT_HPP
 #define DIRT_HPP
 
-#include "MovableSolid.hpp"
+#include "src/elements/solids/movable/MovableSolid.hpp"
 
 class Dirt : public MovableSolid {
 public:

@@ -1,7 +1,7 @@
 #ifndef SAND_HPP
 #define SAND_HPP
 
-#include "MovableSolid.hpp"
+#include "src/elements/solids/movable/MovableSolid.hpp"
 
 class Sand : public MovableSolid {
 public:

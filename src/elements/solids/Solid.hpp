@@ -8,7 +8,7 @@
 #ifndef SOLID_HPP
 #define SOLID_HPP
 
-#include "Element.hpp"
+#include "src/elements/Element.hpp"
 
 /**
  * @brief Base class for all solid elements (movable and immoveable).

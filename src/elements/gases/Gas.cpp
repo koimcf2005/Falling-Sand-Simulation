@@ -1,6 +1,6 @@
-#include "Gas.hpp"
-#include "elements/liquids/Liquid.hpp"
-#include "CellularMatrix.hpp"
+#include "src/elements/gases/Gas.hpp"
+#include "src/elements/liquids/Liquid.hpp"
+#include "src/core/CellularMatrix.hpp"
 
 /// ==================== Update ====================
 void Gas::update(IMatrix& matrix, int x, int y) {

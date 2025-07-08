@@ -1,7 +1,7 @@
 #ifndef WATER_HPP
 #define WATER_HPP
 
-#include "Liquid.hpp"
+#include "src/elements/liquids/Liquid.hpp"
 
 class Water : public Liquid {
 public:

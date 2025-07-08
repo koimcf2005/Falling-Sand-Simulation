@@ -8,7 +8,7 @@
 #ifndef GAS_HPP
 #define GAS_HPP
 
-#include "Element.hpp"
+#include "src/elements/Element.hpp"
 
 /**
  * @brief Base class for all gas elements (e.g., steam, smoke).

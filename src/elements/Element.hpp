@@ -8,8 +8,8 @@
 #include <random>
 #include <algorithm>
 #include <unordered_map>
-#include "ElementFactory.hpp"
-#include "../IMatrix.hpp"
+#include "src/elements/ElementFactory.hpp"
+#include "src/core/IMatrix.hpp"
 
 /**
  * @brief Base class for all elements in the simulation.

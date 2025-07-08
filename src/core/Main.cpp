@@ -1,9 +1,9 @@
 // src/Main.cpp
 #include <SDL2/SDL.h>
-#include "elements/Element.hpp"
-#include "elements/ElementFactory.hpp"
-#include "CellularMatrix.hpp"
-#include "ui/ElementUI.hpp"
+#include "src/elements/Element.hpp"
+#include "src/elements/ElementFactory.hpp"
+#include "src/core/CellularMatrix.hpp"
+#include "src/ui/ElementUI.hpp"
 #include <iostream>
 #include <vector>
 #include <string>

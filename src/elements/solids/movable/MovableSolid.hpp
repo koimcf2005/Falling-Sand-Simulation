@@ -3,7 +3,7 @@
 #define MOVABLE_SOLID_HPP
 
 #include <unordered_map>
-#include "Solid.hpp"
+#include "src/elements/solids/Solid.hpp"
 
 /**
  * @brief Base class for all movable solid elements (e.g., sand, powder).
