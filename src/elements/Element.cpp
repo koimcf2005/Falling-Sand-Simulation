@@ -1,6 +1,8 @@
 // src/elements/Element.cpp
 #include "src/elements/Element.hpp"
 
+class PhysicsParticle;
+
 // ========= Static Members =========
 std::mt19937 Element::rng{std::random_device{}()};
 std::uniform_real_distribution<float> Element::norm_dist(0.0f, 1.0f);
