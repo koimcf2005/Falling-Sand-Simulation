@@ -2,11 +2,11 @@
 #ifndef ELEMENT_UI_HPP
 #define ELEMENT_UI_HPP
 
+#include "src/elements/ElementFactory.hpp"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <vector>
 #include <string>
-#include "../elements/ElementFactory.hpp"
 
 struct ElementButton {
 	ElementType type;
