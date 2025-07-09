@@ -29,7 +29,7 @@ public:
 	//-------------------------------------------
 	// Element Management
 	//-------------------------------------------
-	void placeElement(int x, int y, ElementType type);
+	void placeElement(int x, int y, ElementType type) override;
 	void placeElementsInArea(int startX, int startY, int radius, ElementType type);
 
 	// IMatrixAccess interface implementation
