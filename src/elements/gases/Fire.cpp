@@ -56,7 +56,7 @@ void Fire::spreadHeat(IMatrix& matrix, int x, int y) {
                 Element* neighbor = matrix.getElement(nx, ny);
                 if (neighbor && neighbor->getType() != EMPTY) {
                     // Add heat based on distance
-                    float heatTransfer = 50.0f / (abs(dx) + abs(dy) + 1);
+                    float heatTransfer = 10.0f / (abs(dx) + abs(dy) + 1);
                     neighbor->addTemperature(heatTransfer);
                     
                     // Check if neighbor should react to heat
@@ -84,7 +84,7 @@ void Fire::consumeFuel(IMatrix& matrix, int x, int y) {
                     
                     // Consume fuel with some probability
                     if ((type == WOOD || type == OIL) && norm_dist(rng) < 0.05f) {
-                        destroyElement(matrix, nx, ny);
+                        matrix.placeElement(nx, ny, FIRE);
                         lifetime += 20; // Extend life when consuming fuel
                     }
                 }

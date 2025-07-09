@@ -7,15 +7,6 @@
 class Wood : public ImmoveableSolid {
 public:
 	Wood(int x, int y) : ImmoveableSolid(WOOD, x, y) {}
-
-	void reactToHeat(IMatrix& matrix, int x, int y) override;
 };
-
-void Wood::reactToHeat(IMatrix& matrix, int x, int y) {
-	// Wood catches fire when heated
-	if (norm_dist(rng) < 0.3f) { // 30% chance to ignite
-		matrix.placeElement(x, y, FIRE);
-	}
-}
 
 #endif // WOOD_HPP
