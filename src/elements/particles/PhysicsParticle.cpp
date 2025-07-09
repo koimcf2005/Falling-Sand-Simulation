@@ -5,8 +5,8 @@
 #include "src/elements/liquids/Liquid.hpp"
 
 // ========= Constructor =========
-PhysicsParticle::PhysicsParticle(ElementType representedType, SDL_Color elemColor, int x, int y, float velX, float velY)
-	: Element(PHYSICS_PARTICLE, x, y),
+PhysicsParticle::PhysicsParticle(ElementType representedType, SDL_Color elemColor, int x, int y, float velX, float velY, float f)
+	: Element(representedType, x, y),
 	  representedType(representedType),
 	  velocity_x(velX),
 	  velocity_y(velY),
@@ -15,6 +15,7 @@ PhysicsParticle::PhysicsParticle(ElementType representedType, SDL_Color elemColo
 	// Take on the color of the represented element
 	color = elemColor;
 	backup_color = color;
+	friction = f;
 
 	// Set density based on represented element (approximate)
 	Element* tempElement = ElementFactory::createElementFromType(representedType, x, y);
@@ -31,7 +32,7 @@ void PhysicsParticle::update(IMatrix& matrix, int x, int y) {
 	movedThisFrame = false;
 
 	// Apply air resistance
-	velocity_x *= AIR_RESISTANCE;
+	velocity_x *= AIR_RESISTANCE * calculateFriction(matrix, x, y, x, y + 1);
 	velocity_y *= AIR_RESISTANCE;
 
 	// Apply gravity
@@ -138,14 +139,15 @@ bool PhysicsParticle::isEffectivelyStationary() const {
 }
 
 // ========= Conversion Utility =========
-void PhysicsParticle::convertElementToPhysicsParticle(IMatrix& matrix, int x, int y, float velX, float velY) {
+void PhysicsParticle::convertElementToPhysicsParticle(IMatrix& matrix, int x, int y, float velX, float velY, float f) {
 	Element* element = matrix.getElement(x, y);
 	PhysicsParticle* particle = new PhysicsParticle(
 		element->getType(),
 		element->getColor(),
 		x, y,
 		velX,
-		velY
+		velY,
+		f
 	);
 	Element* currentElement = matrix.getElement(x, y);
 	matrix.getElement(x, y) = particle;

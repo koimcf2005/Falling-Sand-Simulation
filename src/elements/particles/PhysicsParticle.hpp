@@ -13,7 +13,7 @@
 class PhysicsParticle : public Element {
 public:
 	// ========= Constructor =========
-	PhysicsParticle(ElementType representedType, SDL_Color elemColor, int x, int y, float velX = 0.0f, float velY = 0.0f);
+	PhysicsParticle(ElementType representedType, SDL_Color elemColor, int x, int y, float velX = 0.0f, float velY = 0.0f, float friction = 0.1f);
 
 	// ========= Core Interface =========
 	void update(IMatrix& matrix, int x, int y) override;
@@ -28,7 +28,7 @@ public:
 	float getVelocityY() const;
 
 	// ========= Utility =========
-	static void convertElementToPhysicsParticle(IMatrix& matrix, int x, int y, float velX = 0.0f, float velY = 0.0f);
+	static void convertElementToPhysicsParticle(IMatrix& matrix, int x, int y, float velX = 0.0f, float velY = 0.0f, float f = 0.1f);
 
 protected:
 	// ========= Movement / Behavior =========

@@ -36,24 +36,45 @@ void MovableSolid::handleWhileGrounded(IMatrix& matrix, int x, int y) {
 	int dir = getRandomDirection(); // Randomly pick left or right
 	
 	// Check if we hit the ground at high velocity - if so, bounce using PhysicsParticle
-	static constexpr float BOUNCE_VELOCITY_THRESHOLD = 2.0f;
-	if (velocity_y >= BOUNCE_VELOCITY_THRESHOLD && canReplaceElement(matrix, x, y - 1)) {
+	if (velocity_y > 2.0f && canReplaceElement(matrix, x, y - 1)) {
 		// Create a PhysicsParticle to handle the bouncing
-		PhysicsParticle::convertElementToPhysicsParticle(matrix, x, y, dir * 0.3f, -velocity_y * 0.3f);
+		float absorption = calculateAbsorption(matrix, x, y, x, y + 1);
+		PhysicsParticle::convertElementToPhysicsParticle(matrix, x, y, dir * velocity_y * absorption, -velocity_y * absorption, friction);
 		return;
 	}
 	
-	// Removed velocity_x logic because the new PhysicsParticle handles that for us
+	// If falling fast enough, set horizontal velocity
+	if (velocity_y >= 1.0f / impactAbsorption) {
+		velocity_x = velocity_y * impactAbsorption * dir;
+	}
 
-	// Blocked vertically: try to slide or move horizontally
 	// Try to slide diagonally (sand piling)
 	if (canReplaceElement(matrix, x + dir, y + 1)) {
 		Element::swapElements(matrix, x, y, x + dir, y + 1);
 		affectAdjacentNeighbors(matrix, x, y);
+		velocity_x += 0.5f * dir;
 	}
 	else if (canReplaceElement(matrix, x - dir, y + 1)) {
 		Element::swapElements(matrix, x, y, x - dir, y + 1);
 		affectAdjacentNeighbors(matrix, x, y);
+		velocity_x += 0.5f * dir;
+	}
+	// Try to move horizontally as far as possible using velocity_x
+	int horiz_dir = (velocity_x > 0) ? 1 : (velocity_x < 0) ? -1 : 0;
+	int max_steps = std::fabs(static_cast<int>(velocity_x));
+	int last_valid_x = x;
+	for (int i = 1; i <= max_steps; ++i) {
+		int target_x = x + i * horiz_dir;
+		if (canReplaceElement(matrix, target_x, y)) {
+			last_valid_x = target_x;
+		} else {
+			break;
+		}
+	}
+	if (last_valid_x != x) {
+		Element::swapElements(matrix, x, y, last_valid_x, y);
+		affectAdjacentNeighbors(matrix, x, y);
+		velocity_x *= friction;
 	}
 }
 

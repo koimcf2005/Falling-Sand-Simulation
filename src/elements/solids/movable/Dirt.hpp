@@ -9,7 +9,7 @@ public:
 		velocity_y = 1.0f;
 		velocity_x = 0.0f;
 		friction = 0.9f;
-		absorption = 0.3f;
+		impactAbsorption = 0.75f;
 		inertialResistance = 0.2f;
 		density = 1.0f;
 	}

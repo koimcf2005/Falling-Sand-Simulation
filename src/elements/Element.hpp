@@ -25,6 +25,7 @@ public:
 
 	// ========= Element Metadata =========
 	ElementType getType() const;
+	std::string getTypeString() const;
 	SDL_Color getColor() const;
 	void setColor(const SDL_Color& newColor);
 
@@ -36,7 +37,10 @@ public:
 
 	// ========= Physical Properties =========
 	float getDensity() const;
-
+	float getFriction() const;
+	float getImpactAbsorption() const;
+	float getInertialResistance() const;
+	
 protected:
 	// ========= Movement Logic =========
 	virtual void handleFalling(IMatrix& matrix, int x, int y);
@@ -46,6 +50,9 @@ protected:
 	virtual void applyAdjacentNeighborEffect();
 	virtual bool canReplaceElement(IMatrix& matrix, int x, int y) const;
 
+	float calculateAbsorption(IMatrix& matrix, int x1, int y1, int x2, int y2);
+	float calculateFriction(IMatrix& matrix, int x1, int y1, int x2, int y2);
+	
 	// ========= Update Management =========
 	bool checkIfUpdated();
 
@@ -79,8 +86,8 @@ protected:
 	float density = 0.5f;
 	float velocity_y = 1.0f;
 	float accumulated_y = 0.0f;
-	float friction = 0.5f;
-	float absorption = 0.5f;
+	float friction = 0.1f;
+	float impactAbsorption = 0.5f;
 	float inertialResistance = 0.5f;
 
 	// Movement Flags

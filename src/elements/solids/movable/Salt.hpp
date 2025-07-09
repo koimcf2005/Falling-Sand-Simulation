@@ -9,7 +9,7 @@ public:
 		velocity_y = 1.0f;
 		velocity_x = 0.0f;
 		friction = 0.9f;
-		absorption = 0.5f;
+		impactAbsorption = 0.5f;
 		inertialResistance = 0.05f;
 		density = 0.4f;
 		dissolveChances = {

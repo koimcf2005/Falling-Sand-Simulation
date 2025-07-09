@@ -18,8 +18,31 @@ Element::Element(ElementType type, int x, int y)
 // ========= Metadata Access =========
 ElementType Element::getType() const { return type; }
 SDL_Color Element::getColor() const { return color; }
+std::string Element::getTypeString() const { return ElementFactory::getElementName(type); }
 void Element::setColor(const SDL_Color& newColor) { color = newColor; }
 float Element::getDensity() const { return density; }
+float Element::getFriction() const { return friction; }
+float Element::getImpactAbsorption() const { return impactAbsorption; }
+float Element::getInertialResistance() const { return inertialResistance; }
+
+float Element::calculateAbsorption(IMatrix& matrix, int x1, int y1, int x2, int y2) {
+	float elem1 = matrix.isInBounds(x1, y1) ?
+		matrix.getElement(x1, y1)->getImpactAbsorption() : 0.1f;
+	float elem2 = matrix.isInBounds(x2, y2) ?
+		matrix.getElement(x2, y2)->getImpactAbsorption() : 0.1f;
+	return std::clamp((1 - elem1) * (1 - elem2), 0.0f, 1.0f);
+}
+
+float Element::calculateFriction(IMatrix& matrix, int x1, int y1, int x2, int y2) {
+	Element* elem1 = matrix.isInBounds(x1, y1) ? matrix.getElement(x1, y1) : nullptr;
+	Element* elem2 = matrix.isInBounds(x2, y2) ? matrix.getElement(x2, y2) : nullptr;
+
+	if ((elem1 && elem1->getType() == EMPTY) || (elem2 && elem2->getType() == EMPTY)) return 1.0f;
+
+	float friction1 = elem1 ? elem1->getFriction() : 0.1f;
+	float friction2 = elem2 ? elem2->getFriction() : 0.1f;
+	return std::clamp(1 - (friction1 + friction2), 0.0f, 1.0f);
+}
 
 // ========= Update State =========
 bool Element::getHasUpdated() const { return step == Element::globalStep; }
