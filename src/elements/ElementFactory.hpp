@@ -24,6 +24,7 @@ enum ElementType {
 	OIL,
 	SMOKE,
 	STEAM,
+	FIRE,
 	PHYSICS_PARTICLE
 };
 

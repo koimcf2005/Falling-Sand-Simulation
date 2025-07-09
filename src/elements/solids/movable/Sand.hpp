@@ -13,6 +13,16 @@ public:
 		inertialResistance = 0.025f;
 		density = 0.49f;
 	}
+	void reactToHeat(IMatrix& matrix, int x, int y) override;
 };
+
+void Sand::reactToHeat(IMatrix& matrix, int x, int y) {
+    // Sand turns reddish when very hot (visual effect)
+    if (temperature > 500.0f) {
+        color = {255, 100, 50, 255}; // Hot sand color
+    } else {
+        color = backup_color; // Return to normal color when cooled
+    }
+}
 
 #endif // SAND_HPP

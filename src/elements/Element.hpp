@@ -40,6 +40,13 @@ public:
 	float getFriction() const;
 	float getImpactAbsorption() const;
 	float getInertialResistance() const;
+
+    // ========= Temperature System =========
+    float getTemperature() const;
+    void setTemperature(float temp);
+    void addTemperature(float temp);
+    float getTemperatureThreshold() const;
+    virtual void reactToHeat(IMatrix& matrix, int x, int y);
 	
 protected:
 	// ========= Movement Logic =========
@@ -89,6 +96,10 @@ protected:
 	float friction = 0.1f;
 	float impactAbsorption = 0.5f;
 	float inertialResistance = 0.5f;
+
+    // Temperature System
+    float temperature = 20.0f; // Room temperature in Celsius
+    float temperatureThreshold = 100.0f; // Default threshold
 
 	// Movement Flags
 	bool wasMoving = true;
