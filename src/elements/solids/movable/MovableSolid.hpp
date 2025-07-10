@@ -33,8 +33,8 @@ protected:
 	bool getShouldDissolve(IMatrix& matrix, int x, int y);
 
 	// ========= Horizontal Motion Properties =========
-	float velocity_x = 0.0f;        ///< Horizontal velocity
-	float accumulated_x = 0.0f;     ///< Accumulated horizontal movement
+	float velocity_x = 0.0f;		///< Horizontal velocity
+	float accumulated_x = 0.0f;	 ///< Accumulated horizontal movement
 };
 
 #endif // MOVABLE_SOLID_HPP

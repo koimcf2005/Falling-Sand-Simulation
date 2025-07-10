@@ -31,9 +31,8 @@ void Element::setTemperature(float temp) { temperature = temp; }
 void Element::addTemperature(float temp) { temperature += temp; }
 float Element::getTemperatureThreshold() const { return temperatureThreshold; }
 
-void Element::reactToHeat(IMatrix& matrix, int x, int y) {
-    // Default: no reaction to heat
-    (void)matrix; (void)x; (void)y; // Suppress unused parameter warnings
+void Element::reactToHeat(IMatrix&, int, int) {
+	// Default: no reaction to heat
 }
 
 float Element::calculateAbsorption(IMatrix& matrix, int x1, int y1, int x2, int y2) {
