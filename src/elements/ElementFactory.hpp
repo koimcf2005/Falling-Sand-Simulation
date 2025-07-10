@@ -18,6 +18,7 @@ enum ElementType {
 	DIRT,
 	COAL,
 	SALT,
+	ASH,
 	STONE,
 	WOOD,
 	WATER,

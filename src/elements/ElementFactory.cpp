@@ -9,6 +9,7 @@
 #include "src/elements/solids/movable/Dirt.hpp"
 #include "src/elements/solids/movable/Coal.hpp"
 #include "src/elements/solids/movable/Salt.hpp"
+#include "src/elements/solids/movable/Ash.hpp"
 #include "src/elements/solids/immoveable/Stone.hpp"
 #include "src/elements/solids/immoveable/Wood.hpp"
 #include "src/elements/liquids/Water.hpp"
@@ -16,7 +17,7 @@
 #include "src/elements/gases/Smoke.hpp"
 #include "src/elements/gases/Steam.hpp"
 #include "src/elements/EmptyElement.hpp"
-#include "src/elements/gases/Fire.hpp"
+#include "src/elements/fires/Fire.hpp"
 
 // ===============================
 // Factory Function Implementation
@@ -73,6 +74,7 @@ void ElementFactory::initialize() {
 	registerElement<Dirt>(DIRT, "Dirt", {98, 50, 19, 255}, 5);
 	registerElement<Coal>(COAL, "Coal", {35, 35, 35, 255}, 5);
 	registerElement<Salt>(SALT, "Salt", {255, 255, 255, 255}, 5);
+	registerElement<Ash>(ASH, "Ash", {143, 143, 143, 255}, 15);
 	registerElement<Water>(WATER, "Water", {51, 82, 72, 100}, 1);
 	registerElement<Oil>(OIL, "Oil", {40, 40, 40, 100}, 1);
 	registerElement<Stone>(STONE, "Stone", {128, 128, 128, 255}, 5, "assets/textures/stone.png");

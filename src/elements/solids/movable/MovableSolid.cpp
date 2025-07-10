@@ -8,6 +8,7 @@
 // ========= Update Loop =========
 void MovableSolid::update(IMatrix& matrix, int x, int y) {
 	if (checkIfUpdated()) return;
+	if (handleHeat(matrix, x, y)) return;
 
 	// Backup last frame's movement status
 	wasMoving = isMoving;

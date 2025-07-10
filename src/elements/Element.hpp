@@ -47,6 +47,7 @@ public:
 	void addTemperature(float temp);
 	float getTemperatureThreshold() const;
 	virtual void reactToHeat(IMatrix& matrix, int x, int y);
+	virtual void reactToCooling(IMatrix& matrix, int x, int y);
 	
 protected:
 	// ========= Movement Logic =========
@@ -62,6 +63,7 @@ protected:
 	
 	// ========= Update Management =========
 	bool checkIfUpdated();
+	bool handleHeat(IMatrix& matrix, int x, int y);
 
 	// ========= Element Management =========
 	static void swapElements(IMatrix& matrix, int x1, int y1, int x2, int y2);
@@ -100,6 +102,7 @@ protected:
 	// Temperature System
 	float temperature = 20.0f; // Room temperature in Celsius
 	float temperatureThreshold = 100.0f; // Default threshold
+	bool shouldReactToHeat = true;
 
 	// Movement Flags
 	bool wasMoving = true;

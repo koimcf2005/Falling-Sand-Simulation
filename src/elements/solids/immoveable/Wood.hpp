@@ -12,8 +12,10 @@ public:
 };
 
 void Wood::reactToHeat(IMatrix& matrix, int x, int y) {
-	// Wood catches fire when heated
-	if (norm_dist(rng) < 0.01f) { // 30% chance to ignite
+	// Only combust if none of the neighbors are fire,
+	// because if the neighbors are fire,
+	// then the fire logic will consume the wood instead
+	if (Element::getNeighborElementsOfType<Element>(matrix, FIRE, x, y).size() == 0) {
 		matrix.placeElement(x, y, FIRE);
 	}
 }

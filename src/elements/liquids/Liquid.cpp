@@ -16,6 +16,7 @@ void Liquid::setdestroyDissolvedElement(bool value) {
 // ========== Update ==========
 void Liquid::update(IMatrix& matrix, int x, int y) {
 	if (checkIfUpdated()) return;
+	if (handleHeat(matrix, x, y)) return;
 
 	// --- Proper movement boolean handling ---
 	wasMoving = isMoving;	// Save last frame's movement state

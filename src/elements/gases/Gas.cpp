@@ -5,6 +5,7 @@
 /// ==================== Update ====================
 void Gas::update(IMatrix& matrix, int x, int y) {
 	if (checkIfUpdated()) return;
+	if (handleHeat(matrix, x, y)) return;
 
 	// Lambda: returns true if a cell at (posX, posY) can be replaced (empty or gas)
 	auto canReplaceElement = [&](int posX, int posY) -> bool {

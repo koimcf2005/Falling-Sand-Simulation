@@ -13,9 +13,7 @@ public:
 
 void Water::reactToHeat(IMatrix& matrix, int x, int y) {
 	// Water turns to steam when heated enough
-	if (norm_dist(rng) < 0.1f) {
-		matrix.placeElement(x, y, STEAM);
-	}
+	matrix.placeElement(x, y, STEAM);
 }
 
 #endif // SAND_HPP

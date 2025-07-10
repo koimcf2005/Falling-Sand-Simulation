@@ -12,10 +12,12 @@ public:
 };
 
 void Oil::reactToHeat(IMatrix& matrix, int x, int y) {
-    // Oil ignites easily
-    if (norm_dist(rng) < 0.8f) { // 80% chance to ignite
-        matrix.placeElement(x, y, FIRE);
-    }
+	// Only combust if none of the neighbors are fire,
+	// because if the neighbors are fire,
+	// then the fire logic will consume the wood instead
+	if (Element::getNeighborElementsOfType<Element>(matrix, FIRE, x, y).size() == 0) {
+		matrix.placeElement(x, y, FIRE);
+	}
 }
 
 #endif // SAND_HPP

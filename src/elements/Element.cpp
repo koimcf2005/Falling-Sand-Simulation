@@ -35,6 +35,24 @@ void Element::reactToHeat(IMatrix&, int, int) {
 	// Default: no reaction to heat
 }
 
+void Element::reactToCooling(IMatrix&, int, int) {
+	// Default: no reaction to heat
+}
+
+bool Element::handleHeat(IMatrix& matrix, int x, int y) {
+	if (shouldReactToHeat && temperature >= temperatureThreshold) {
+		reactToHeat(matrix, x, y);
+		shouldReactToHeat = false;
+		return true;
+	}
+	else if (!shouldReactToHeat && temperature < temperatureThreshold) {
+		reactToCooling(matrix, x, y);
+		shouldReactToHeat = true;
+		return true;
+	}
+	return false;
+}
+
 float Element::calculateAbsorption(IMatrix& matrix, int x1, int y1, int x2, int y2) {
 	float elem1 = matrix.isInBounds(x1, y1) ?
 		matrix.getElement(x1, y1)->getImpactAbsorption() : 0.1f;
