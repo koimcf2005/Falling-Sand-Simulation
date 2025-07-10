@@ -230,19 +230,25 @@ int main(int /* unused */, char* /* unused */[]) {
 			lag -= MS_PER_UPDATE;
 		}
 
-		//----------------
-		// FPS Calculation
-		//----------------
-		frameCount++;
-		if (currentTime - fpsLastTime >= 1000) {
-			fps = frameCount * 1000.0f / (currentTime - fpsLastTime);
-			frameCount = 0;
-			fpsLastTime = currentTime;
-			
-			std::string title = "Cellular matrix with Element System - FPS: " 
-							 + std::to_string(static_cast<int>(fps));
-			SDL_SetWindowTitle(window, title.c_str());
-		}
+        //----------------
+        // FPS Calculation
+        //----------------
+        frameCount++;
+        if (currentTime - fpsLastTime >= 1000) {
+            fps = frameCount * 1000.0f / (currentTime - fpsLastTime);
+            frameCount = 0;
+            fpsLastTime = currentTime;
+            
+            int activeChunks = matrix.getActiveChunkCount();
+            int totalChunks = (RENDER_WIDTH / 16 + (RENDER_WIDTH % 16 ? 1 : 0)) * 
+                             (RENDER_HEIGHT / 16 + (RENDER_HEIGHT % 16 ? 1 : 0));
+            
+            std::string title = "Cellular matrix with Element System - FPS: " 
+                             + std::to_string(static_cast<int>(fps))
+                             + " - Active Chunks: " + std::to_string(activeChunks)
+                             + "/" + std::to_string(totalChunks);
+            SDL_SetWindowTitle(window, title.c_str());
+        }
 
 		//----------------
 		// Rendering
