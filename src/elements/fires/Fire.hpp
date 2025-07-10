@@ -44,7 +44,7 @@ private:
 
 	ElementType spawnOnDeath = EMPTY;
 
-	int lifetime = 25 + (rng() % 25); // Random lifetime 25-50 frames
+	int lifetime = 10 + (rng() % 10); // Random lifetime 10-20 frames
 	int smokeGenerationTimer = 0;
 	int framesPerSmokeSpawn = 5;
 	static std::uniform_int_distribution<int> colorDist;
