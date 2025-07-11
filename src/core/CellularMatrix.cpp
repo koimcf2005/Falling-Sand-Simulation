@@ -242,7 +242,8 @@ void CellularMatrix::render(SDL_Renderer* renderer) {
 			SDL_Color color = matrix[y][x]->getColor();
 
 			if (!chunks[getChunkY(y)][getChunkX(x)].isActive()) {
-
+                color.r += 100; // Gray
+                color.a = 128; // Semi-transparent
 			}
 
 			pixels[y * WIDTH + x] = (color.r << 24) | (color.g << 16) | 
