@@ -187,6 +187,10 @@ int CellularMatrix::getActiveChunkCount() const {
     return count;
 }
 
+void CellularMatrix::switchDebugMode() {
+	debugMode = !debugMode;
+}
+
 //-------------------------------------------
 // Simulation Update
 //-------------------------------------------
@@ -241,9 +245,8 @@ void CellularMatrix::render(SDL_Renderer* renderer) {
 		for (int x = 0; x < WIDTH; ++x) {
 			SDL_Color color = matrix[y][x]->getColor();
 
-			if (!chunks[getChunkY(y)][getChunkX(x)].isActive()) {
-                color.r += 100; // Gray
-                color.a = 128; // Semi-transparent
+			if (debugMode && !chunks[getChunkY(y)][getChunkX(x)].isActive()) {
+				color.r += 100; // Redshift the color to make it obvious whats not updating
 			}
 
 			pixels[y * WIDTH + x] = (color.r << 24) | (color.g << 16) | 

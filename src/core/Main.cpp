@@ -140,7 +140,9 @@ int main(int /* unused */, char* /* unused */[]) {
 				switch (event.key.keysym.sym) {
 					case SDLK_SPACE:
 						elementUI.toggleVisibility();
-						std::cout << "UI " << (elementUI.isVisible() ? "shown" : "hidden") << std::endl;
+						break;
+					case SDLK_d:
+						matrix.switchDebugMode();
 						break;
 				}
 			}
