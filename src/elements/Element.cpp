@@ -150,11 +150,13 @@ void Element::affectAdjacentNeighbors(IMatrix& matrix, int x, int y) {
 	if (matrix.isInBounds(x - 1, y)) {
 		if (Element* left = matrix.getElement(x - 1, y)) {
 			left->applyAdjacentNeighborEffect();
+			matrix.activateChunkAt(x - 1, y);
 		}
 	}
 	if (matrix.isInBounds(x + 1, y)) {
 		if (Element* right = matrix.getElement(x + 1, y)) {
 			right->applyAdjacentNeighborEffect();
+			matrix.activateChunkAt(x + 1, y);
 		}
 	}
 }

@@ -35,7 +35,7 @@ public:
 
 	// Chunk management
 	void activateChunk(int chunkX, int chunkY);
-	void activateChunkAt(int worldX, int worldY);
+	void activateChunkAt(int worldX, int worldY) override;
 	void activateNeighboringChunks(int chunkX, int chunkY);
 	
 	// Debug info

@@ -31,6 +31,9 @@ public:
 	// Element management
 	virtual void destroyElement(int x, int y) = 0;
 	virtual void swapElements(int x1, int y1, int x2, int y2) = 0;
+
+	// Chunk Management 
+	virtual void activateChunkAt(int worldX, int worldY) = 0;
 };
 
 #endif // IMATRIX_HPP
