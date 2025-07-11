@@ -240,6 +240,11 @@ void CellularMatrix::render(SDL_Renderer* renderer) {
 	for (int y = HEIGHT - 1; y >= 0; --y) {
 		for (int x = 0; x < WIDTH; ++x) {
 			SDL_Color color = matrix[y][x]->getColor();
+
+			if (!chunks[getChunkY(y)][getChunkX(x)].isActive()) {
+
+			}
+
 			pixels[y * WIDTH + x] = (color.r << 24) | (color.g << 16) | 
 								   (color.b << 8) | color.a;
 		}
