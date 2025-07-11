@@ -132,11 +132,13 @@ void CellularMatrix::swapElements(int x1, int y1, int x2, int y2) {
 	int chunk2X = getChunkX(x2), chunk2Y = getChunkY(y2);
 	
 	if (isValidChunk(chunk1X, chunk1Y)) {
-		chunks[chunk1Y][chunk1X].setHasMovement(true);
+		chunks[chunk1Y][chunk1X].activate();
+		chunks[chunk1Y][chunk1X].setActiveNextFrame();
 		activateNeighboringChunks(x1, y1);
 	}
 	if (isValidChunk(chunk2X, chunk2Y) && (chunk1X != chunk2X || chunk1Y != chunk2Y)) {
-		chunks[chunk2Y][chunk2X].setHasMovement(true);
+		chunks[chunk2Y][chunk2X].activate();
+		chunks[chunk2Y][chunk2X].setActiveNextFrame();
 		activateNeighboringChunks(x2, y2);
 	}
 }
@@ -147,6 +149,7 @@ void CellularMatrix::swapElements(int x1, int y1, int x2, int y2) {
 void CellularMatrix::activateChunk(int chunkX, int chunkY) {
 	if (isValidChunk(chunkX, chunkY)) {
 		chunks[chunkY][chunkX].activate();
+		chunks[chunkY][chunkX].setActiveNextFrame();
 	}
 }
 
@@ -154,12 +157,13 @@ void CellularMatrix::activateChunkAt(int worldX, int worldY) {
 	int chunkX = getChunkX(worldX);
 	int chunkY = getChunkY(worldY);
 	activateChunk(chunkX, chunkY);
+	activateNeighboringChunks(worldX, worldY);
 }
 
 void CellularMatrix::activateNeighboringChunks(int x, int y) {
 	bool onLeftEdge   = (x % Chunk::CHUNK_SIZE) == 0;
 	bool onRightEdge  = (x % Chunk::CHUNK_SIZE) == Chunk::CHUNK_SIZE - 1;
-	bool onTopEdge    = (y % Chunk::CHUNK_SIZE) == 0;
+	bool onTopEdge	= (y % Chunk::CHUNK_SIZE) == 0;
 	bool onBottomEdge = (y % Chunk::CHUNK_SIZE) == Chunk::CHUNK_SIZE - 1;
 
 	int chunkX = getChunkX(x);

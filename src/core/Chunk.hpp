@@ -20,11 +20,6 @@ public:
 	// Update activity state for next frame
 	void updateActivityState();
 	
-	// Check if any elements in this chunk moved this frame
-	bool hasMovingElements() const { return hasMovement; }
-	void setHasMovement(bool movement) { hasMovement = movement; }
-	void resetMovementFlag() { hasMovement = false; }
-	
 	// Chunk coordinates
 	int getChunkX() const { return chunkX; }
 	int getChunkY() const { return chunkY; }
@@ -37,7 +32,7 @@ private:
 	int chunkX, chunkY;
 	bool active;
 	bool activeNextFrame;
-	bool hasMovement;
+	int countdown = 10;
 };
 
 #endif // CHUNK_HPP
