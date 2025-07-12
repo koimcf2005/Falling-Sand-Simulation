@@ -9,9 +9,13 @@ Chunk::Chunk()
 	: chunkX(0), chunkY(0), active(true), activeNextFrame(false) {
 }
 
+bool Chunk::isActive() const {
+	return active;
+}
+
 void Chunk::activate() {
 	active = true;
-	activeNextFrame = false;
+	activeNextFrame = true;
 }
 
 void Chunk::deactivate() {
@@ -29,4 +33,13 @@ void Chunk::updateActivityState() {
 			active = false;
 		}
 	}
+}
+
+// Chunk coordinates
+int Chunk::getChunkX() const {
+	return chunkX;
+}
+
+int Chunk::getChunkY() const {
+	return chunkY;
 }

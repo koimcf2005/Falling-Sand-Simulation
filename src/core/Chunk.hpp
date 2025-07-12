@@ -12,21 +12,16 @@ public:
 	Chunk();
 	
 	// Activity management
-	bool isActive() const { return active; }
+	bool isActive() const;
 	void activate();
 	void deactivate();
-	void setActiveNextFrame() { activeNextFrame = true; }
 	
 	// Update activity state for next frame
 	void updateActivityState();
 	
 	// Chunk coordinates
-	int getChunkX() const { return chunkX; }
-	int getChunkY() const { return chunkY; }
-	
-	// Get world coordinates of this chunk
-	int getWorldX() const { return chunkX * CHUNK_SIZE; }
-	int getWorldY() const { return chunkY * CHUNK_SIZE; }
+	int getChunkX() const;
+	int getChunkY() const;
 	
 private:
 	int chunkX, chunkY;

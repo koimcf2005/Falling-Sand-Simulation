@@ -23,6 +23,7 @@ void Fire::setFramesPerSmokeSpawn(int frames) {
 
 void Fire::update(IMatrix& matrix, int x, int y) {
 	if (checkIfUpdated()) return;
+	matrix.activateChunk(x, y);
 
 	// Check for fuel nearby
 	if (!hasFuelNearby(matrix, x, y)) {

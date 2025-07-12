@@ -13,10 +13,10 @@ CellularMatrix::CellularMatrix(int width, int height)
 	: matrix(height),
 	WIDTH{width},
 	HEIGHT{height},
-	pixels(width * height),
 	CHUNKS_X((width + Chunk::CHUNK_SIZE - 1) / Chunk::CHUNK_SIZE),
 	CHUNKS_Y((height + Chunk::CHUNK_SIZE - 1) / Chunk::CHUNK_SIZE),
-	chunks(CHUNKS_Y)
+	chunks(CHUNKS_Y),
+	pixels(width * height)
 {
 	// Initialize the grid with empty elements
 	for (int y = 0; y < height; ++y) {
@@ -107,7 +107,7 @@ void CellularMatrix::placeElement(int x, int y, ElementType type) {
 		matrix[y][x] = newElement;
 		
 		// Activate the chunk containing this element
-		activateChunkAt(x, y);
+		activateChunk(x, y);
 	}
 }
 
@@ -133,12 +133,10 @@ void CellularMatrix::swapElements(int x1, int y1, int x2, int y2) {
 	
 	if (isValidChunk(chunk1X, chunk1Y)) {
 		chunks[chunk1Y][chunk1X].activate();
-		chunks[chunk1Y][chunk1X].setActiveNextFrame();
 		activateNeighboringChunks(x1, y1);
 	}
-	if (isValidChunk(chunk2X, chunk2Y) && (chunk1X != chunk2X || chunk1Y != chunk2Y)) {
+	if ((chunk1X != chunk2X || chunk1Y != chunk2Y) && isValidChunk(chunk2X, chunk2Y)) {
 		chunks[chunk2Y][chunk2X].activate();
-		chunks[chunk2Y][chunk2X].setActiveNextFrame();
 		activateNeighboringChunks(x2, y2);
 	}
 }
@@ -146,40 +144,35 @@ void CellularMatrix::swapElements(int x1, int y1, int x2, int y2) {
 //-------------------------------------------
 // Chunk Management
 //-------------------------------------------
-void CellularMatrix::activateChunk(int chunkX, int chunkY) {
+void CellularMatrix::activateChunk(int x, int y) {
+	int chunkX = getChunkX(x);
+	int chunkY = getChunkY(y);
 	if (isValidChunk(chunkX, chunkY)) {
 		chunks[chunkY][chunkX].activate();
-		chunks[chunkY][chunkX].setActiveNextFrame();
 	}
-}
-
-void CellularMatrix::activateChunkAt(int worldX, int worldY) {
-	int chunkX = getChunkX(worldX);
-	int chunkY = getChunkY(worldY);
-	activateChunk(chunkX, chunkY);
-	activateNeighboringChunks(worldX, worldY);
+	activateNeighboringChunks(x, y);
 }
 
 void CellularMatrix::activateNeighboringChunks(int x, int y) {
 	bool onLeftEdge   = (x % Chunk::CHUNK_SIZE) == 0;
 	bool onRightEdge  = (x % Chunk::CHUNK_SIZE) == Chunk::CHUNK_SIZE - 1;
-	bool onTopEdge	= (y % Chunk::CHUNK_SIZE) == 0;
+	bool onTopEdge    = (y % Chunk::CHUNK_SIZE) == 0;
 	bool onBottomEdge = (y % Chunk::CHUNK_SIZE) == Chunk::CHUNK_SIZE - 1;
 
 	int chunkX = getChunkX(x);
 	int chunkY = getChunkY(y);
 
 	if (onLeftEdge && isValidChunk(chunkX - 1, chunkY)) {
-		chunks[chunkY][chunkX - 1].setActiveNextFrame();
+		chunks[chunkY][chunkX - 1].activate();
 	}
 	if (onRightEdge && isValidChunk(chunkX + 1, chunkY)) {
-		chunks[chunkY][chunkX + 1].setActiveNextFrame();
+		chunks[chunkY][chunkX + 1].activate();
 	}
 	if (onTopEdge && isValidChunk(chunkX, chunkY - 1)) {
-		chunks[chunkY - 1][chunkX].setActiveNextFrame();
+		chunks[chunkY - 1][chunkX].activate();
 	}
 	if (onBottomEdge && isValidChunk(chunkX, chunkY + 1)) {
-		chunks[chunkY + 1][chunkX].setActiveNextFrame();
+		chunks[chunkY + 1][chunkX].activate();
 	}
 }
 
@@ -208,17 +201,11 @@ void CellularMatrix::switchDebugMode() {
 //-------------------------------------------
 void CellularMatrix::update() {
 	// Update only active chunks
-	for (int chunkY = 0; chunkY < CHUNKS_Y; ++chunkY) {
+	for (int chunkY = CHUNKS_Y - 1; chunkY >= 0; --chunkY) {
 		for (int chunkX = 0; chunkX < CHUNKS_X; ++chunkX) {
 			if (chunks[chunkY][chunkX].isActive()) {
 				updateChunk(chunkX, chunkY);
 			}
-		}
-	}
-	
-	// Update chunk activity states for next frame
-	for (int chunkY = 0; chunkY < CHUNKS_Y; ++chunkY) {
-		for (int chunkX = 0; chunkX < CHUNKS_X; ++chunkX) {
 			chunks[chunkY][chunkX].updateActivityState();
 		}
 	}

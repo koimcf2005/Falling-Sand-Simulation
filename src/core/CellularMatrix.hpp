@@ -34,8 +34,7 @@ public:
 	void update();
 
 	// Chunk management
-	void activateChunk(int chunkX, int chunkY);
-	void activateChunkAt(int worldX, int worldY) override;
+	void activateChunk(int x, int y) override;
 	void activateNeighboringChunks(int chunkX, int chunkY);
 	
 	// Debug info
@@ -47,11 +46,11 @@ private:
 	std::vector<std::vector<Element*>> matrix;
 	const int WIDTH;
 	const int HEIGHT;
-	
+
 	// Chunk system
-	std::vector<std::vector<Chunk>> chunks;
 	const int CHUNKS_X;
 	const int CHUNKS_Y;
+	std::vector<std::vector<Chunk>> chunks;
 	
 	// Rendering
 	SDL_Texture* renderTexture = nullptr;
