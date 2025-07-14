@@ -112,13 +112,33 @@ void CellularMatrix::placeElement(int x, int y, ElementType type) {
 }
 
 void CellularMatrix::placeElementsInArea(int centerX, int centerY, int radius, ElementType type) {
-	int r2 = radius * radius;
+	int r2 = std::max(1, radius * radius - 1);
+	if (r2 == 1) {
+		placeElement(centerX, centerY, type);
+		return;
+	}
 	for (int y = centerY - radius; y <= centerY + radius; ++y) {
 		for (int x = centerX - radius; x <= centerX + radius; ++x) {
 			int dx = x - centerX;
 			int dy = y - centerY;
 			if (dx * dx + dy * dy <= r2) {
 				placeElement(x, y, type);
+			}
+		}
+	}
+}
+
+void CellularMatrix::heatElementsInArea(int centerX, int centerY, int radius) {
+	int r2 = radius * radius;
+	for (int y = centerY - radius; y <= centerY + radius; ++y) {
+		for (int x = centerX - radius; x <= centerX + radius; ++x) {
+			int dx = x - centerX;
+			int dy = y - centerY;
+			if (dx * dx + dy * dy <= r2) {
+				if (isInBounds(x, y)) {
+					matrix[y][x]->setTemperature(10000);
+					activateChunk(x, y);
+				}
 			}
 		}
 	}

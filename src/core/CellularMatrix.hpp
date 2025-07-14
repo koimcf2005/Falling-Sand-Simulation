@@ -29,6 +29,7 @@ public:
 	// Element placement
 	void placeElement(int x, int y, ElementType type) override;
 	void placeElementsInArea(int centerX, int centerY, int radius, ElementType type);
+	void heatElementsInArea(int centerX, int centerY, int radius);
 
 	// Main update loop
 	void update();
@@ -39,6 +40,7 @@ public:
 	
 	// Debug info
 	void switchDebugMode();
+	bool getDebugMode() const { return debugMode; }
 	int getActiveChunkCount() const;
 
 private:

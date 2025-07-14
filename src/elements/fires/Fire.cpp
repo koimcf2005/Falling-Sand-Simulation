@@ -32,7 +32,12 @@ void Fire::update(IMatrix& matrix, int x, int y) {
 
 	// Die if lifetime is over
 	if (lifetime <= 0) {
-		matrix.placeElement(x, y, spawnOnDeath);
+		if (spawnOnDeath == EMPTY || norm_dist(rng) > chanceToSpawnOnDeath) {
+			matrix.placeElement(x, y, EMPTY);
+		}
+		else {
+			matrix.placeElement(x, y, spawnOnDeath);
+		}
 		return;
 	}
 
@@ -61,7 +66,7 @@ void Fire::spreadHeat(IMatrix& matrix, int x, int y) {
 				Element* neighbor = matrix.getElement(nx, ny);
 				if (neighbor && neighbor->getType() != EMPTY) {
 					// Add heat based on distance
-					float heatTransfer = 50.0f / (abs(dx) + abs(dy) + 1);
+					float heatTransfer = 10.0f / (abs(dx) + abs(dy) + 1);
 					neighbor->addTemperature(heatTransfer);
 				}
 			}
@@ -126,7 +131,7 @@ bool Fire::hasFuelNearby(IMatrix& matrix, int x, int y) {
 				if (fuel.type != type) continue;
 
 				// Check if temperature is high enough to ignite
-				if (neighbor->getTemperature() >= neighbor->getTemperatureThreshold()) {
+				if (neighbor->getTemperature() >= neighbor->getTemperatureThreshold() * 0.5f) {
 					
 					// Attempt combustion based on chance
 					if (norm_dist(rng) < fuel.chanceOfConsumption) {
@@ -136,11 +141,8 @@ bool Fire::hasFuelNearby(IMatrix& matrix, int x, int y) {
 						if (newFire) {
 							newFire->addLife(fuel.lifeFromConsumption);
 							newFire->setFramesPerSmokeSpawn(fuel.framesPerSmokeSpawn);
-						}
-
-						// Possibly spawn element after death
-						if (norm_dist(rng) < fuel.chanceToSpawnOnDeath) {
-							spawnOnDeath = fuel.spawnOnDeath;
+							newFire->spawnOnDeath = fuel.spawnOnDeath;
+							newFire->chanceToSpawnOnDeath = fuel.chanceToSpawnOnDeath;
 						}
 					}
 				}

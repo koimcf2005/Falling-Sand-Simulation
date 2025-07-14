@@ -43,6 +43,7 @@ private:
 	};
 
 	ElementType spawnOnDeath = EMPTY;
+	float chanceToSpawnOnDeath = 0;
 
 	int lifetime = 10 + (rng() % 10); // Random lifetime 10-20 frames
 	int smokeGenerationTimer = 0;

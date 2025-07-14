@@ -45,10 +45,10 @@ public:
 	static constexpr int UI_PADDING = 8;
 	static constexpr int BUTTON_SIZE = 10;
 	static constexpr int BUTTON_SPACING = 3;
+	static constexpr int TOOLTIP_FONT_SIZE = 8;
 	static constexpr int TOOLTIP_MARGIN = 4;
 	static constexpr int TOOLTIP_PADDING = 4;
 	static constexpr int TOOLTIP_ALPHA = 200;
-	static constexpr int TOOLTIP_FONT_SIZE = 8;
 	
 private:
 	std::vector<ElementButton> buttons;

@@ -12,8 +12,14 @@ public:
 };
 
 void Water::reactToHeat(IMatrix& matrix, int x, int y) {
-	// Water turns to steam when heated enough
-	matrix.placeElement(x, y, STEAM);
+	if (dissolvedElement == EMPTY || destroyDissolvedElement) {
+		// Water turns to steam when heated enough
+		matrix.placeElement(x, y, STEAM);
+	}
+	else {
+		matrix.placeElement(x, y, dissolvedElement);
+	}
+
 }
 
 #endif // SAND_HPP

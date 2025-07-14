@@ -38,7 +38,7 @@ bool Liquid::canReplaceElement(IMatrix& matrix, int x, int y) const {
 	Element* elem = matrix.getElement(x, y);
 	// Can't replace same type
 	if (elem && elem->getType() == getType()) return false;
-	
+
 	// Can replace empty cells
 	if (matrix.isEmpty(x, y)) return true;
 	

@@ -16,12 +16,6 @@ bool ElementUI::initialize(SDL_Renderer* r, int winWidth, int winHeight) {
 	windowWidth = winWidth;
 	windowHeight = winHeight;
 	
-	// Initialize SDL_ttf
-	if (TTF_Init() == -1) {
-		std::cerr << "Failed to initialize SDL_ttf: " << TTF_GetError() << std::endl;
-		return false;
-	}
-	
 	// Load font (smaller size for tooltip)
 	font = TTF_OpenFont("assets/fonts/PublicPixel.ttf", TOOLTIP_FONT_SIZE);
 	if (!font) {
