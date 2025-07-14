@@ -36,6 +36,9 @@ public:
 	static bool globalStep;
 
 	// ========= Physical Properties =========
+	float getVelocityY() const;
+	void addVelocityY(float value);
+	void setVelocityY(float value);
 	float getDensity() const;
 	float getFriction() const;
 	float getImpactAbsorption() const;

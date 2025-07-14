@@ -1,6 +1,8 @@
 // src/core/CellularMatrix.cpp
 #include "src/core/CellularMatrix.hpp"
 #include "src/elements/EmptyElement.hpp"
+#include "src/core/Globals.hpp"
+#include "src/core/Renderer.hpp"
 #include <algorithm>
 #include <random>
 #include <utility>
@@ -30,7 +32,7 @@ CellularMatrix::CellularMatrix(int width, int height)
 	for (int chunkY = 0; chunkY < CHUNKS_Y; ++chunkY) {
 		chunks[chunkY].resize(CHUNKS_X);
 		for (int chunkX = 0; chunkX < CHUNKS_X; ++chunkX) {
-			chunks[chunkY][chunkX] = Chunk(chunkX, chunkY);
+			chunks[chunkY][chunkX] = Chunk( chunkX, chunkY);
 		}
 	}
 }
@@ -238,7 +240,7 @@ void CellularMatrix::updateChunk(int chunkX, int chunkY) {
 	int startY = chunkY * Chunk::CHUNK_SIZE;
 	int endX = std::min(startX + Chunk::CHUNK_SIZE, WIDTH);
 	int endY = std::min(startY + Chunk::CHUNK_SIZE, HEIGHT);
-	
+
 	// Create column order for this chunk
 	std::vector<int> columnOrder;
 	for (int x = startX; x < endX; ++x) {
@@ -258,22 +260,32 @@ void CellularMatrix::updateChunk(int chunkX, int chunkY) {
 //-------------------------------------------
 // Rendering
 //-------------------------------------------
-void CellularMatrix::render(SDL_Renderer* renderer) {
+void CellularMatrix::updateTexture() {
 	// Convert element colors to pixel format
 	for (int y = HEIGHT - 1; y >= 0; --y) {
 		for (int x = 0; x < WIDTH; ++x) {
 			SDL_Color color = matrix[y][x]->getColor();
-
-			if (debugMode && !chunks[getChunkY(y)][getChunkX(x)].isActive()) {
-				color.r += 100; // Redshift the color to make it obvious whats not updating
-			}
 
 			pixels[y * WIDTH + x] = (color.r << 24) | (color.g << 16) | 
 								   (color.b << 8) | color.a;
 		}
 	}
 
+	if (debugMode) {
+		for (int chunkY = CHUNKS_Y - 1; chunkY >= 0; --chunkY) {
+			for (int chunkX = 0; chunkX < CHUNKS_X; ++chunkX) {
+				Chunk chunk = chunks[chunkY][chunkX];
+				if (chunk.isActive()) {
+					gRenderer->drawScreenSpaceRect(chunk.getWorldX(), chunk.getWorldY(), Chunk::CHUNK_SIZE, Chunk::CHUNK_SIZE, 1);
+				}
+			}
+		}
+	}
+
 	// Update and render texture
 	SDL_UpdateTexture(renderTexture, NULL, pixels.data(), WIDTH * sizeof(Uint32));
-	SDL_RenderCopy(renderer, renderTexture, NULL, NULL);
+}
+
+SDL_Texture* CellularMatrix::getTexture() const {
+	return renderTexture;
 }

@@ -24,7 +24,8 @@ public:
 
 	// Rendering
 	void initializeRenderer(SDL_Renderer* renderer);
-	void render(SDL_Renderer* renderer);
+	void updateTexture();
+	SDL_Texture* getTexture() const; // returns renderTexture
 
 	// Element placement
 	void placeElement(int x, int y, ElementType type) override;

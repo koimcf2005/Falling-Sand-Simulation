@@ -1,5 +1,7 @@
 // src/core/Chunk.cpp
 #include "src/core/Chunk.hpp"
+#include "src/core/Globals.hpp"
+#include "src/core/Renderer.hpp"
 
 Chunk::Chunk(int chunkX, int chunkY) 
 	: chunkX(chunkX), chunkY(chunkY), active(true), activeNextFrame(false) {
@@ -42,4 +44,12 @@ int Chunk::getChunkX() const {
 
 int Chunk::getChunkY() const {
 	return chunkY;
+}
+
+int Chunk::getWorldX() const {
+	return chunkX * CHUNK_SIZE;
+}
+
+int Chunk::getWorldY() const {
+	return chunkY * CHUNK_SIZE;
 }

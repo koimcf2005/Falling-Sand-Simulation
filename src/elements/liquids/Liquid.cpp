@@ -111,7 +111,7 @@ void Liquid::handleHorizontalSpreading(IMatrix& matrix, int x, int y) {
 	if (last_valid_x != x) {
 		Element::swapElements(matrix, x, y, last_valid_x, y);
 	}
-	velocity_y = 1.0f;
+	setVelocityY(1.0f);
 	accumulated_y = 0.0f;
 }
 

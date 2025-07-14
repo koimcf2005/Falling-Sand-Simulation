@@ -38,7 +38,7 @@ private:
 
 	// List of known flammable fuels and their combustion properties
 	const std::vector<FuelType> fuels = {
-		FuelType(WOOD, 0.01f, 1000, ASH, 0.1f, 1),
+		FuelType(WOOD, 0.01f, 250, ASH, 0.1f, 1),
 		FuelType(OIL, 0.8f,    0, EMPTY, 1.0f, -1)
 	};
 

@@ -6,7 +6,7 @@
 
 class Chunk {
 public:
-	static const int CHUNK_SIZE = 16; // 16x16 chunks for 320x200 = 20x13 chunks
+	static const int CHUNK_SIZE = 8;
 	
 	Chunk(int chunkX, int chunkY);
 	Chunk();
@@ -22,6 +22,10 @@ public:
 	// Chunk coordinates
 	int getChunkX() const;
 	int getChunkY() const;
+
+	// Get world coordinates of this chunk
+	int getWorldX() const;
+	int getWorldY() const;
 	
 private:
 	int chunkX, chunkY;

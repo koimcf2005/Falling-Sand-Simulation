@@ -3,19 +3,21 @@
 #include <iostream>
 #include <string>
 
+#include "src/core/Globals.hpp"
 #include "src/elements/Element.hpp"
 #include "src/elements/ElementFactory.hpp"
 #include "src/core/CellularMatrix.hpp"
+#include "src/core/Renderer.hpp"
 #include "src/ui/ElementUI.hpp"
 #include "src/ui/DebugUI.hpp"
 
 //-------------------------------------------
 // Constants
 //-------------------------------------------
-const int WINDOW_WIDTH = 1280;        // Display window resolution (pixels)
-const int WINDOW_HEIGHT = 720;
-const int RENDER_WIDTH = 384;         // Internal simulation resolution
-const int RENDER_HEIGHT = 216;
+const int WINDOW_WIDTH = 1024;        // Display window resolution (pixels)
+const int WINDOW_HEIGHT = 512;
+const int RENDER_WIDTH = 512;         // Internal simulation resolution
+const int RENDER_HEIGHT = 256;
 const float PHYSICS_HZ = 60.0f;       // Physics update frequency
 const float MS_PER_UPDATE = 1000.0f / PHYSICS_HZ; // Fixed timestep (ms)
 
@@ -26,7 +28,6 @@ bool initializeSDL(SDL_Window*& window, SDL_Renderer*& renderer);
 void shutdown(SDL_Window* window, SDL_Renderer* renderer);
 void handleEvents(bool& running, SDL_Event& event, ElementUI& elementUI, bool& leftMouseDown, bool& rightMouseDown, bool& heatMode, int& areaSize, CellularMatrix& matrix);
 void handleElementPlacement(CellularMatrix& matrix, int mouseX, int mouseY, bool& leftMouseDown, bool& rightMouseDown, bool heatMode, int& prevGridX, int& prevGridY, int areaSize, ElementType selectedElement, bool mouseOverUI);
-void drawCircleOutline(SDL_Renderer* renderer, int centerX, int centerY, int radius);
 
 //-------------------------------------------
 // Entry Point
@@ -38,14 +39,13 @@ int main() {
 	// Initialize SDL and TTF
 	if (!initializeSDL(window, renderer)) return -1;
 
+	gRenderer = new Renderer(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, RENDER_WIDTH, RENDER_HEIGHT);
+	gRenderer->setLogicalResolution();
+
 	// Load all element types
 	ElementFactory::initialize();
 
-	// Set pixel-perfect rendering
-	SDL_RenderSetLogicalSize(renderer, RENDER_WIDTH, RENDER_HEIGHT);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
-
-	// Initialize UI
+	// Initialize ElementUI
 	ElementUI elementUI;
 	if (!elementUI.initialize(renderer, RENDER_WIDTH, RENDER_HEIGHT)) {
 		std::cerr << "Failed to initialize Element UI\n";
@@ -53,6 +53,7 @@ int main() {
 		return -1;
 	}
 
+	// Initialize DebugUI
 	DebugUI debugUI;
 	if (!debugUI.initialize(renderer)) {
 		std::cerr << "Failed to initialize Debug UI\n";
@@ -125,28 +126,16 @@ int main() {
 		//-------------------------------------------
 		// Rendering
 		//-------------------------------------------
-		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-		SDL_RenderClear(renderer);
-
-		matrix.render(renderer);
-		elementUI.render(renderer);
-
-		// Draw brush outline if mouse is inside simulation area
-		if (!mouseOverUI && logicalMouseX >= 0 && logicalMouseX < RENDER_WIDTH && logicalMouseY >= 0 && logicalMouseY < RENDER_HEIGHT) {
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			drawCircleOutline(renderer, logicalMouseX, logicalMouseY, areaSize);
-		}
-
-		// Switch to full-res rendering and draw debug text
-		SDL_RenderSetLogicalSize(renderer, 0, 0);
-		debugUI.render(matrix.getDebugMode());
-
-		SDL_RenderPresent(renderer);
-		SDL_RenderSetLogicalSize(renderer, RENDER_WIDTH, RENDER_HEIGHT);
+		gRenderer->renderScene(matrix, elementUI, debugUI, matrix.getDebugMode());
+		gRenderer->drawBrushOutline(logicalMouseX, logicalMouseY, areaSize, mouseOverUI);
+		// gRenderer->drawScreenSpaceRect(100, 100, 200, 120, 1);
+		gRenderer->present();
 	}
 
 	// Cleanup and shutdown
 	elementUI.cleanup();
+	delete gRenderer;
+	gRenderer = nullptr;
 	shutdown(window, renderer);
 	return 0;
 }
@@ -247,36 +236,4 @@ void handleElementPlacement(CellularMatrix& matrix, int mouseX, int mouseY, bool
 
 	prevGridX = gridX;
 	prevGridY = gridY;
-}
-
-//-------------------------------------------
-// Midpoint Circle Drawing Algorithm
-//-------------------------------------------
-void drawCircleOutline(SDL_Renderer* renderer, int centerX, int centerY, int radius) {
-	const int diameter = radius * 2;
-	int x = radius - 1, y = 0;
-	int tx = 1, ty = 1;
-	int err = tx - diameter;
-
-	while (x >= y) {
-		SDL_RenderDrawPoint(renderer, centerX + x, centerY - y);
-		SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
-		SDL_RenderDrawPoint(renderer, centerX - x, centerY - y);
-		SDL_RenderDrawPoint(renderer, centerX - x, centerY + y);
-		SDL_RenderDrawPoint(renderer, centerX + y, centerY - x);
-		SDL_RenderDrawPoint(renderer, centerX + y, centerY + x);
-		SDL_RenderDrawPoint(renderer, centerX - y, centerY - x);
-		SDL_RenderDrawPoint(renderer, centerX - y, centerY + x);
-
-		if (err <= 0) {
-			y++;
-			err += ty;
-			ty += 2;
-		}
-		if (err > 0) {
-			x--;
-			tx += 2;
-			err += tx - diameter;
-		}
-	}
 }

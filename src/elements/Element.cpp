@@ -20,6 +20,9 @@ ElementType Element::getType() const { return type; }
 SDL_Color Element::getColor() const { return color; }
 std::string Element::getTypeString() const { return ElementFactory::getElementName(type); }
 void Element::setColor(const SDL_Color& newColor) { color = newColor; }
+float Element::getVelocityY() const { return velocity_y; }
+void Element::addVelocityY(float value) { velocity_y = std::clamp(velocity_y + value, -32.0f, 32.0f); }
+void Element::setVelocityY(float value) { velocity_y = std::clamp(value, -32.0f, 32.0f); }
 float Element::getDensity() const { return density; }
 float Element::getFriction() const { return friction; }
 float Element::getImpactAbsorption() const { return impactAbsorption; }
@@ -111,7 +114,7 @@ void Element::destroyElement(IMatrix& matrix, int x, int y) {
 void Element::handleFalling(IMatrix& matrix, int x, int y) {
 	if (canReplaceElement(matrix, x, y + 1)) {
 		isMoving = true;
-		velocity_y = std::clamp(velocity_y + GRAVITY, 0.0f, 10.0f);
+		addVelocityY(GRAVITY);
 		accumulated_y += velocity_y;
 		int move_y = static_cast<int>(accumulated_y);
 
@@ -133,7 +136,7 @@ void Element::handleFalling(IMatrix& matrix, int x, int y) {
 		}
 	} else {
 		handleWhileGrounded(matrix, x, y);
-		velocity_y = 1.0f;
+		setVelocityY(1.0f);
 		accumulated_y = 0.0f;
 	}
 }
