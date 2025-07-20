@@ -5,19 +5,19 @@
 #include <iostream>
 
 // Element class includes
-#include "src/elements/solids/movable/Sand.hpp"
-#include "src/elements/solids/movable/Dirt.hpp"
-#include "src/elements/solids/movable/Coal.hpp"
-#include "src/elements/solids/movable/Salt.hpp"
-#include "src/elements/solids/movable/Ash.hpp"
-#include "src/elements/solids/immoveable/Stone.hpp"
-#include "src/elements/solids/immoveable/Wood.hpp"
-#include "src/elements/liquids/Water.hpp"
-#include "src/elements/liquids/Oil.hpp"
-#include "src/elements/gases/Smoke.hpp"
-#include "src/elements/gases/Steam.hpp"
-#include "src/elements/EmptyElement.hpp"
-#include "src/elements/fires/Fire.hpp"
+#include "src/elements/types/Empty.hpp"
+#include "src/elements/types/Sand.hpp"
+#include "src/elements/types/Dirt.hpp"
+#include "src/elements/types/Coal.hpp"
+#include "src/elements/types/Salt.hpp"
+#include "src/elements/types/Ash.hpp"
+#include "src/elements/types/Stone.hpp"
+#include "src/elements/types/Wood.hpp"
+#include "src/elements/types/Water.hpp"
+#include "src/elements/types/Oil.hpp"
+#include "src/elements/types/Smoke.hpp"
+#include "src/elements/types/Steam.hpp"
+#include "src/elements/types/Fire.hpp"
 
 // ===============================
 // Factory Function Implementation
@@ -156,7 +156,6 @@ SDL_Color ElementFactory::getOffsetColor(ElementType type) {
 	color.r = std::clamp(color.r + offset, 0, 255);
 	color.g = std::clamp(color.g + offset, 0, 255);
 	color.b = std::clamp(color.b + offset, 0, 255);
-	color.a = 255;
 	return color;
 }
 

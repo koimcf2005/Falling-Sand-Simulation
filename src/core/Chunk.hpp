@@ -5,9 +5,7 @@
 #include <vector>
 
 class Chunk {
-public:
-	static const int CHUNK_SIZE = 8;
-	
+public:	
 	Chunk(int chunkX, int chunkY);
 	Chunk();
 	

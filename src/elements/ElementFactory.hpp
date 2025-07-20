@@ -26,7 +26,6 @@ enum ElementType {
 	SMOKE,
 	STEAM,
 	FIRE,
-	PHYSICS_PARTICLE
 };
 
 // Forward declare Element class since we only need the pointer type

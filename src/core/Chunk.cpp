@@ -47,9 +47,9 @@ int Chunk::getChunkY() const {
 }
 
 int Chunk::getWorldX() const {
-	return chunkX * CHUNK_SIZE;
+	return chunkX * g_CHUNK_SIZE;
 }
 
 int Chunk::getWorldY() const {
-	return chunkY * CHUNK_SIZE;
+	return chunkY * g_CHUNK_SIZE;
 }

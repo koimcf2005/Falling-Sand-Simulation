@@ -4,7 +4,9 @@
 
 #include "src/core/IMatrix.hpp"
 #include "src/core/Chunk.hpp"
+#include "src/core/Globals.hpp"
 #include "src/elements/Element.hpp"
+#include "src/particles/ParticleManager.hpp"
 #include <SDL2/SDL.h>
 #include <vector>
 #include <random>
@@ -23,7 +25,7 @@ public:
 	void swapElements(int x1, int y1, int x2, int y2) override;
 
 	// Rendering
-	void initializeRenderer(SDL_Renderer* renderer);
+	void initializeTexture(SDL_Renderer* renderer);
 	void updateTexture();
 	SDL_Texture* getTexture() const; // returns renderTexture
 
@@ -46,14 +48,10 @@ public:
 
 private:
 	// Grid data
-	std::vector<std::vector<Element*>> matrix;
-	const int WIDTH;
-	const int HEIGHT;
+	Element* matrix[Matrix::HEIGHT][Matrix::WIDTH];
 
 	// Chunk system
-	const int CHUNKS_X;
-	const int CHUNKS_Y;
-	std::vector<std::vector<Chunk>> chunks;
+	Chunk chunks[g_CHUNKS_Y][g_CHUNKS_X];
 	
 	// Rendering
 	SDL_Texture* renderTexture = nullptr;
@@ -65,11 +63,14 @@ private:
 	// Debug
 	bool debugMode = false;
 
+	static bool globalStep;
+
 	// Helper methods
-	int getChunkX(int worldX) const { return worldX / Chunk::CHUNK_SIZE; }
-	int getChunkY(int worldY) const { return worldY / Chunk::CHUNK_SIZE; }
+	int getChunkX(int worldX) const { return worldX / g_CHUNK_SIZE; }
+	int getChunkY(int worldY) const { return worldY / g_CHUNK_SIZE; }
 	bool isValidChunk(int chunkX, int chunkY) const;
 	void updateChunk(int chunkX, int chunkY);
+	void updateChunkRow(int chunkX, int chunkY, int row);
 };
 
 #endif // CELLULARMATRIX_HPP
