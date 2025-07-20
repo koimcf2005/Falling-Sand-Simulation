@@ -28,7 +28,7 @@ public:
 		// (already done above, but do it here for safety)
 		m_ChanceToSpawnParticle = 0.5f;
 		m_ChanceToSpawnSmoke = 0.5f;
-		m_LifeTime = 100;
+		m_LifeTime = 15;
 	}
 
 	void update(IMatrix& matrix) override {
@@ -39,7 +39,6 @@ public:
 			destroySelf(matrix);
 			return;
 		}
-
 
 		// More natural fire color palette with weighted random
 		int colorVariant = ElementRNG::getRandomInt(0, 9);
@@ -62,7 +61,7 @@ public:
 		}
 
 		if (!matrix.isInBounds(m_PosX, m_PosY - 1)) return;
-		if (matrix.getElement(m_PosX, m_PosY - 1)->getType() != EMPTY) return;
+		if (matrix.getElement(m_PosX, m_PosY - 1)->getType() == FIRE) return;
 
 		if (ElementRNG::getRandomChance(m_ChanceToSpawnParticle)) {
 			int w = ElementRNG::getRandomInt(1, 2);

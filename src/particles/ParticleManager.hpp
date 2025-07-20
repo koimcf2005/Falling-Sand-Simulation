@@ -36,6 +36,7 @@ struct Particle {
 		  velocityX(0), velocityY(0),
 		  accelerationX(0), accelerationY(0),
 		  lifetime(0), lifetimeRandomness(0.0f), fadeThreshold(1.0f),
+		  accumulationX(0.0f), accumulationY(0.0f),
 		  maxLifetime(0), alpha(255)
 	{}
 
@@ -71,6 +72,7 @@ struct Particle {
 	accelerationX(ax), accelerationY(ay),
 	lifetime(l * ElementRNG::getRandomFloat(1 - lr, 1 + lr)),
 	fadeThreshold(ft),
+	accumulationX(0.0f), accumulationY(0.0f),
 	maxLifetime(lifetime),
 	alpha(color.a)
 	{}

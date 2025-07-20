@@ -25,17 +25,6 @@ Particle* ParticleManager::getParticle(int index) { return &m_Particles[index]; 
 size_t ParticleManager::size() { return m_Count; }
 
 void ParticleManager::updateParticles() {
-	ParticleManager::spawnParticle({
-		Matrix::WIDTH / 2, Matrix::HEIGHT / 2,
-		1, 1,
-		{255, 180, 40, 215},
-		0, -1,
-		0, 0,
-		10,
-		1.0f,
-		0.4f
-	});
-
 	size_t i = 0;
 	while (i < m_Count) {
 
