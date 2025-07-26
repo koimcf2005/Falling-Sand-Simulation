@@ -28,13 +28,18 @@ A cellular automata-based particle simulation built with C++ and SDL2. This proj
 - **Right Mouse Button**: Erase (place empty space)  
 - **Mouse Wheel**: Adjust brush size (1-10)  
 
-## Building
+---
+
+## Build System
+
+This project uses **CMake** and a **cross-platform Python script (`build.py`)** to manage builds and execution. It supports both Debug and Release builds and works on **Linux**, **macOS**, and **Windows** (with Python and CMake installed).
 
 ### Prerequisites
 
-- C++17 compatible compiler  
-- SDL2, SDL2_image, and SDL2_ttf development libraries  
-- Make  
+- Python 3  
+- CMake 3.19+  
+- A C++17 compatible compiler  
+- SDL2, SDL2_image, and SDL2_ttf development libraries
 
 ### Installing SDL2, SDL2_image, and SDL2_ttf
 
@@ -53,55 +58,124 @@ brew install sdl2 sdl2_image sdl2_ttf
 
 #### On Windows:
 
-1. Download the development libraries from:
-   - [SDL2](https://www.libsdl.org/download-2.0.php)
-   - [SDL2_image](https://www.libsdl.org/projects/SDL_image/)
-   - [SDL2_ttf](https://www.libsdl.org/projects/SDL_ttf/)
-2. Extract the files and follow the setup instructions for your compiler/IDE (e.g., Visual Studio, MinGW).
-3. Ensure that the include and lib paths for all three SDL libraries are correctly referenced in your build setup.
+1. Install [CMake](https://cmake.org/download/) and [Python](https://www.python.org/downloads/)
+2. Use [vcpkg](https://github.com/microsoft/vcpkg) to install SDL2 libraries:
+   ```bash
+   ./vcpkg install sdl2 sdl2-image sdl2-ttf
+   ```
+3. Pass the toolchain file when configuring:
+   ```bash
+   cmake --preset=debug -DCMAKE_TOOLCHAIN_FILE=path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+   ```
 
-### Build Instructions
+---
 
-```bash
-# Clone the repository
-git clone https://github.com/koimcf2005/Falling-Sand-Simulation.git
-cd Falling-Sand-Simulation
+## 🛠 Building Without Python
 
-# Build the project
-make
-```
+If you don't want to use `build.py`, you can build the project manually using CMake.
 
-### Running
+### Using CMake Presets (recommended):
 
 ```bash
-./build/run
+# Configure and build debug
+cmake --preset=debug
+cmake --build --preset=debug
+
+# OR for release
+cmake --preset=release
+cmake --build --preset=release
 ```
 
-## Technical Details
+### Without Presets (classic method):
 
-### Architecture
+```bash
+# Debug build
+mkdir -p build/debug
+cd build/debug
+cmake -DCMAKE_BUILD_TYPE=Debug ../..
+cmake --build .
 
-The simulation is built around three main components:
+# Release build
+mkdir -p build/release
+cd build/release
+cmake -DCMAKE_BUILD_TYPE=Release ../..
+cmake --build .
+```
 
-1. **Element System**
-   - Base `Element` class with derived particle types
-   - Each element type implements its own physics behavior
-   - Utilizes polymorphism for element-specific updates
+This builds the binary to `build/[type]/bin/FallingSandSim`.
 
-2. **Cellular Matrix**
-   - Manages the 2D grid of elements
-   - Handles element creation, deletion, and updates
-   - Implements efficient rendering using SDL textures
+---
 
-3. **Physics System**
-   - Fixed timestep updates (120Hz)
-   - Bottom-up update order for proper gravity simulation
-   - Randomized column updates to prevent bias
+## Python Build Script
+
+If you prefer a fully automated experience, use the `build.py` script:
+
+### Build Debug Version
+
+```bash
+python build.py debug
+```
+
+### Build Release Version
+
+```bash
+python build.py release
+```
+
+### Run the Simulation (Debug Build)
+
+```bash
+python build.py run-debug
+```
+
+### Run the Simulation (Release Build)
+
+```bash
+python build.py run-release
+```
+
+### Clean All Build Files
+
+```bash
+python build.py clean
+```
+
+---
+
+## Technical Architecture
+
+### 1. Element System
+
+- Each element inherits from a base `Element` class
+- Individual behaviors are defined per element (e.g., `SandElement`)
+- Behavior is polymorphic and encapsulated
+
+### 2. Cellular Matrix
+
+- Manages a 2D grid of elements
+- Handles per-frame updates and state transitions
+- Efficient rendering via SDL textures
+
+### 3. Physics System
+
+- Fixed timestep physics at 120Hz
+- Gravity simulated with bottom-up updates
+- Column update order randomized to prevent directional bias
+
+---
 
 ## Dependencies
 
-- SDL2 (Simple DirectMedia Layer 2.0)  
-- SDL2_image (for image loading)  
-- SDL2_ttf (for font rendering)  
-- C++ Standard Library  
-- Standard Template Library (STL)  
+- **SDL2** — Rendering, input, windowing  
+- **SDL2_image** — PNG loading  
+- **SDL2_ttf** — Font rendering  
+- **C++17** — Modern language features  
+- **CMake** — Build configuration  
+- **Python 3** — Cross-platform build management via `build.py`  
+- **EnTT** — ECS (Entity-Component-System) architecture (included in `libs/entt`)
+
+---
+
+## License
+
+This project uses open source libraries (like EnTT and SDL2). See their respective licenses in the `libs/` folder.

@@ -1,46 +1,37 @@
-# Compiler
+# Compiler and flags
 CXX = g++
+CXXFLAGS = -O3 -Wall -std=c++20 -Wextra -MMD -MP -I/usr/include/SDL2 -I. -march=native -flto -funroll-loops
+LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf
 
-# Compiler flags
-CXXFLAGS = -g -std=c++17 -Wall -Wextra -MMD -MP -I/usr/include/SDL2 -I.
-
-# Linker flags
-LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
-
-# Project directories
+# Directories
 SRC_DIR = src
 BUILD_DIR = build
-OBJ_DIR = $(BUILD_DIR)/obj
+INCLUDE_DIRS = -Iinclude -Ilibs/entt
 
-# Source files: all .cpp files in src/ and subdirectories
-SRC_FILES = $(shell find $(SRC_DIR) -name '*.cpp')
+# Sources and objects
+SRCS = $(shell find $(SRC_DIR) -name '*.cpp')
+OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
+DEPS = $(OBJS:.o=.d)
 
-# Object files (in build directory, mirroring src/ structure)
-OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
+# Output
+TARGET = $(BUILD_DIR)/run
 
-# Target executable name
-TARGET = build/run
+# Rules
+all: $(TARGET)
 
-# Default rule
-all: directories $(TARGET)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) -c $< -o $@
 
-# Create build directories (mirrors src/ structure for .o files)
-directories:
-	@mkdir -p $(OBJ_DIR)
-	@find $(SRC_DIR) -type d | sed 's|^$(SRC_DIR)|$(OBJ_DIR)|' | xargs -I{} mkdir -p {}
+$(TARGET): | $(BUILD_DIR)
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
-# Linking the final executable
-$(TARGET): $(OBJ_FILES)
-	$(CXX) $(OBJ_FILES) -o $(TARGET) $(LDFLAGS)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-# Compile each .cpp file into a .o file (mirroring src/ structure)
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Include dependency files for automatic header tracking
--include $(OBJ_FILES:.o=.d)
-
-# Clean up
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -f $(TARGET)
+
+# Include dependency files if they exist
+-include $(DEPS)
