@@ -1,6 +1,6 @@
 # Falling Sand Simulation
 
-A cellular automata-based particle simulation built with C++ and SDL2. This project simulates particle physics with elements like sand and stone, featuring realistic falling behavior and particle interactions.
+A cellular automata-based particle simulation built with C++, EnTT, and SDL2. This project creates a physics simulation for every pixel on a 512x512 grid using an Entity Component System.
 
 ## Features
 
@@ -16,6 +16,7 @@ A cellular automata-based particle simulation built with C++ and SDL2. This proj
   - Oil (falls and dissipates)
   - Smoke (rises)
   - Steam (rises)
+  - Fire (Consumes elements like wood and oil)
   - Empty space (air)
 - Dynamic particle placement with adjustable brush size  
 - Efficient rendering using hardware-accelerated textures  
@@ -70,7 +71,43 @@ brew install sdl2 sdl2_image sdl2_ttf
 
 ---
 
-## 🛠 Building Without Python
+## Python Build Script
+
+If you prefer a fully automated build experience, use the `build.py` script:
+
+### Build Debug Version
+
+```bash
+python build.py debug
+```
+
+### Build Release Version
+
+```bash
+python build.py release
+```
+
+### Run the Simulation (Debug Build)
+
+```bash
+python build.py run-debug
+```
+
+### Run the Simulation (Release Build)
+
+```bash
+python build.py run-release
+```
+
+### Clean All Build Files
+
+```bash
+python build.py clean
+```
+
+---
+
+## Building Without Python
 
 If you don't want to use `build.py`, you can build the project manually using CMake.
 
@@ -106,76 +143,22 @@ This builds the binary to `build/[type]/bin/FallingSandSim`.
 
 ---
 
-## Python Build Script
-
-If you prefer a fully automated experience, use the `build.py` script:
-
-### Build Debug Version
-
-```bash
-python build.py debug
-```
-
-### Build Release Version
-
-```bash
-python build.py release
-```
-
-### Run the Simulation (Debug Build)
-
-```bash
-python build.py run-debug
-```
-
-### Run the Simulation (Release Build)
-
-```bash
-python build.py run-release
-```
-
-### Clean All Build Files
-
-```bash
-python build.py clean
-```
-
----
-
-## Technical Architecture
-
-### 1. Element System
-
-- Each element inherits from a base `Element` class
-- Individual behaviors are defined per element (e.g., `SandElement`)
-- Behavior is polymorphic and encapsulated
-
-### 2. Cellular Matrix
-
-- Manages a 2D grid of elements
-- Handles per-frame updates and state transitions
-- Efficient rendering via SDL textures
-
-### 3. Physics System
-
-- Fixed timestep physics at 120Hz
-- Gravity simulated with bottom-up updates
-- Column update order randomized to prevent directional bias
-
----
-
 ## Dependencies
 
+- **C++17** — Modern language features  
+- **EnTT** — ECS (Entity-Component-System) architecture (included in `libs/entt`)
 - **SDL2** — Rendering, input, windowing  
 - **SDL2_image** — PNG loading  
 - **SDL2_ttf** — Font rendering  
-- **C++17** — Modern language features  
 - **CMake** — Build configuration  
 - **Python 3** — Cross-platform build management via `build.py`  
-- **EnTT** — ECS (Entity-Component-System) architecture (included in `libs/entt`)
 
 ---
 
 ## License
 
-This project uses open source libraries (like EnTT and SDL2). See their respective licenses in the `libs/` folder.
+This project is licensed under the terms of the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html).
+
+© 2024 Koi McFarland. You may use, modify, and distribute this software freely under AGPL-3.0, but **commercial use is strictly prohibited unless you also open-source your derivative work under the same license.**
+
+This project uses open source libraries (EnTT and SDL2). See their respective licenses in the `include/` folder.
