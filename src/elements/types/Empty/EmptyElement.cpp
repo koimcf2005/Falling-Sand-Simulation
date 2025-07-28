@@ -7,6 +7,6 @@ void Empty::initialize(entt::entity) {
 
 }
 
-void Empty::update(Matrix&, entt::entity) {
+void Empty::update(Matrix&, entt::entity, const int, const int) {
 
 }

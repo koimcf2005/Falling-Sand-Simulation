@@ -6,20 +6,39 @@
 #include <SDL2/SDL.h>
 #include <string>
 
-/**
- * @brief Position component for ECS entities.
- * @param x X coordinate (int)
- * @param y Y coordinate (int)
- */
-struct Position {
-	int x; ///< X coordinate
-	int y; ///< Y coordinate
+#include <cstdint>
 
-	Position() = default;
-	Position(const int x, const int y)
-	: x(x),
-		y(y)
-	{}
+enum MovementFlags : uint8_t {
+  WasMoving      = 1 << 0,
+  IsMoving       = 1 << 1,
+	MovedThisFrame = 1 << 2
+};
+
+struct MovementState {
+  uint8_t flags = 0;
+
+  void set(MovementFlags f) { flags |= f; }
+  void clear(MovementFlags f) { flags &= ~f; }
+  bool has(MovementFlags f) const { return (flags & f) != 0; }
+
+  void setMoving(bool value) {
+    if (value) set(IsMoving);
+    else clear(IsMoving);
+  }
+
+  void setWasMoving(bool value) {
+    if (value) set(WasMoving);
+    else clear(WasMoving);
+  }
+
+  void setMovedThisFrame(bool value) {
+    if (value) set(MovedThisFrame);
+    else clear(MovedThisFrame);
+  }
+
+  bool isMoving() const { return has(IsMoving); }
+  bool wasMoving() const { return has(WasMoving); }
+	bool movedThisFrame() const { return has(MovedThisFrame); }
 };
 
 
@@ -53,7 +72,7 @@ struct Velocity {
  */
 struct Health {
 	const int max;  ///< Maximum health
-	int health;     ///< Current health
+	int health;   ///< Current health
 
 	Health() = default;
 	Health(const int max_health)
@@ -78,7 +97,7 @@ struct Health {
  */
 struct Temperature {
 	const float threshold; ///< Threshold for effects
-	float temperature;     ///< Current temperature
+	float temperature;   ///< Current temperature
 
 	Temperature() = default;
 	Temperature(const float temperature_threshold)

@@ -29,7 +29,7 @@ public:
 
   static void initializeElementByType(ElementType type, entt::entity entity);
 
-  static void updateElementByType(ElementType type, Matrix& matrix, entt::entity entity);
+  static void updateElementByType(ElementType type, Matrix& matrix, entt::entity entity, const int x, const int y);
 
   /**
    * @brief Creates a new entity of the specified element type at the given position.

@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -O3 -Wall -std=c++20 -Wextra -MMD -MP -I/usr/include/SDL2 -I. -march=native -flto -funroll-loops
+CXXFLAGS = -O3 -Wall -std=c++20 -Wextra -MMD -MP -I/usr/include/SDL2 -I. -march=native -flto=auto -flto-partition=balanced -funroll-loops
 LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf
 
 # Directories

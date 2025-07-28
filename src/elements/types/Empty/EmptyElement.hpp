@@ -7,7 +7,7 @@ class Matrix;
 
 namespace Empty {
 	void initialize(entt::entity entity);
-	void update(Matrix& matrix, entt::entity entity);
+	void update(Matrix& matrix, entt::entity entity, const int x, const int y);
 }
 
 #endif // EMPTY_ELEMENT_HPP

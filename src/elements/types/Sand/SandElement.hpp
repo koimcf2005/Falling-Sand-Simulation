@@ -7,7 +7,7 @@ class Matrix;
 
 namespace Sand {
 	void initialize(entt::entity entity);
-	void update(Matrix& matrix, entt::entity entity);
+	void update(Matrix& matrix, entt::entity entity, const int x, const int y);
 }
 
 #endif // SAND_ELEMENT_HPP

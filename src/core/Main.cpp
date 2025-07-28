@@ -111,5 +111,5 @@ int main() {
   ElementFactory::cleanup();
   Renderer::cleanup();
 
-  return 0;
+  std::exit(0);
 }

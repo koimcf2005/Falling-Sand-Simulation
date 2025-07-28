@@ -114,8 +114,6 @@ private:
 	std::array<entt::entity, Simulation::WIDTH * Simulation::HEIGHT> m_matrix;
 	
 	std::array<Chunk, Chunks::CHUNKS_X * Chunks::CHUNKS_Y> m_chunks;
-
-	std::array<Uint32, Simulation::WIDTH * Simulation::HEIGHT> m_texture_pixels;
 	
 	SDL_Texture* m_simulation_texture;
 	

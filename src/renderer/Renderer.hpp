@@ -67,7 +67,7 @@ public:
 	 * @param height Height in simulation coordinates
 	 * @param thickness Border thickness in pixels
 	 */
-	static void drawScreenSpaceRect(int x, int y, int width, int height, int thickness);
+	static void drawScreenSpaceRect(int x, int y, int width, int height, int thickness, SDL_Color color = {255, 0, 0, 255});
 
 	/**
 	 * @brief Render the simulation scene, UI, and debug overlays.
@@ -80,16 +80,6 @@ public:
 	 * @brief Get the underlying SDL_Renderer pointer.
 	 */
 	static SDL_Renderer* getRenderer();
-
-	// /**
-	//  * @brief Get the ElementUI overlay.
-	//  */
-	// ElementUI* getElementUI();
-
-	// /**
-	//  * @brief Get the DebugUI overlay.
-	//  */
-	// DebugUI* getDebugUI();
 
 	/**
 	 * @brief Cleanup and destroy all SDL resources and UI overlays.
@@ -136,6 +126,7 @@ private:
 	// Struct for queued screen-space rectangles
 	struct ScreenRect {
 		int x, y, w, h, thickness;
+		SDL_Color color;
 	};
 	static std::vector<ScreenRect> s_queued_rects;
 };

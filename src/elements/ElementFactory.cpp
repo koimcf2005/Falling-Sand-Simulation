@@ -35,10 +35,10 @@ void ElementFactory::initializeElementByType(ElementType type, entt::entity enti
 	}
 }
 
-void ElementFactory::updateElementByType(ElementType type, Matrix& matrix, entt::entity entity) {
+void ElementFactory::updateElementByType(ElementType type, Matrix& matrix, entt::entity entity, const int x, const int y) {
 	switch (type) {
-		case EMPTY: Empty::update(matrix, entity); break;
-		case SAND: Sand::update(matrix, entity); break;
+		case EMPTY: Empty::update(matrix, entity, x, y); break;
+		case SAND: Sand::update(matrix, entity, x, y); break;
 		default: break;
 	}
 }
@@ -56,8 +56,6 @@ entt::entity ElementFactory::createElementByType(const ElementType type,
 			!Matrix::getStep()
 		}
 	);
-
-	ComponentManager::addComponent<Position>(newEntity, Position(x, y));
 
 	initializeElementByType(type, newEntity);
 	

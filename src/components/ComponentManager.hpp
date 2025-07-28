@@ -35,6 +35,14 @@ public:
         return registry.get<Component>(entity);
     }
 
+    template<typename Component>
+    static Component* getComponentIfExists(const entt::entity entity) {
+        if (registry.all_of<Component>(entity)) {
+            return &registry.get<Component>(entity);
+        }
+        return nullptr;
+    }
+
     static entt::registry& getRegistry() { return registry; }
 
 private:

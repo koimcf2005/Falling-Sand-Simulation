@@ -78,13 +78,13 @@ If you prefer a fully automated build experience, use the `build.py` script:
 ### Build Debug Version
 
 ```bash
-python build.py debug
+python build.py build-debug
 ```
 
 ### Build Release Version
 
 ```bash
-python build.py release
+python build.py build-release
 ```
 
 ### Run the Simulation (Debug Build)

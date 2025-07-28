@@ -2,17 +2,17 @@
 #define GLOBALS_HPP
 
 namespace Window {
-	const static int WIDTH = 512; //1152;
-	const static int HEIGHT = 512; //648;
+	const static int WIDTH = 512*2; //1152;
+	const static int HEIGHT = 512*2; //648;
 };
 
 namespace Simulation {
-	const static int WIDTH = 512; //384;
-	const static int HEIGHT = 512; //216;
+	const static int WIDTH = 512/2; //384;
+	const static int HEIGHT = 512/2; //216;
 };
 
 namespace Chunks {
-	const static int CHUNK_SIZE = 32;
+	const static int CHUNK_SIZE = 64;
 	const static int CHUNKS_X = (Simulation::WIDTH + CHUNK_SIZE - 1) / CHUNK_SIZE;
 	const static int CHUNKS_Y = (Simulation::HEIGHT + CHUNK_SIZE - 1) / CHUNK_SIZE;
 };

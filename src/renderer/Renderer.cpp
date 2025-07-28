@@ -159,7 +159,7 @@ void Renderer::drawCircleOutline(int centerX, int centerY, int radius) {
 	}
 }
 
-void Renderer::drawScreenSpaceRect(int x, int y, int width, int height, int thickness) {
+void Renderer::drawScreenSpaceRect(int x, int y, int width, int height, int thickness, SDL_Color color) {
 	// Queue a rectangle in screen (window) space for drawing
 	auto [winX, winY] = renderToWindowCoords(x, y);
 	auto [winX2, winY2] = renderToWindowCoords(x + width, y + height);
@@ -167,15 +167,15 @@ void Renderer::drawScreenSpaceRect(int x, int y, int width, int height, int thic
 	int screenWidth = winX2 - winX;
 	int screenHeight = winY2 - winY;
 
-	s_queued_rects.push_back({ winX, winY, screenWidth, screenHeight, thickness });
+	s_queued_rects.push_back({ winX, winY, screenWidth, screenHeight, thickness, color});
 }
 
 void Renderer::drawQueuedRects() {
 	// Draw all queued screen-space rectangles (used for overlays)
 	setWindowResolution();
-	SDL_SetRenderDrawColor(sp_renderer, 255, 0, 0, 255); // Red outlines
-
+	
 	for (const auto& rect : s_queued_rects) {
+		SDL_SetRenderDrawColor(sp_renderer, rect.color.r, rect.color.g, rect.color.b, rect.color.a); // Red outlines
 		SDL_Rect top    = { rect.x, rect.y, rect.w, rect.thickness };
 		SDL_Rect bottom = { rect.x, rect.y + rect.h - rect.thickness, rect.w, rect.thickness };
 		SDL_Rect left   = { rect.x, rect.y, rect.thickness, rect.h };
