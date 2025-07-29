@@ -37,7 +37,7 @@ public:
 
 	void swapEntities(const int x1, const int y1, const int x2, const int y2);
 
-	void activateChunk(const int x, const int y);
+	void updateChunk(const int x, const int y);
 
 	//-------------------------------------------
   // Rendering and Debug 
@@ -61,8 +61,6 @@ public:
 
 	Chunk& getChunk(const int chunk_x, const int chunk_y);
 	const Chunk& getChunk(const int chunk_x, const int chunk_y) const;
-
-	int getActiveChunkCount() const;
 
 	//-------------------------------------------
   // Element Getters 
@@ -104,8 +102,6 @@ private:
 	//-------------------------------------------
   // Chunk helper functions
   //-------------------------------------------
-	void activateNeighboringChunks(const int chunk_x, const int chunk_y);
-
 	bool isValidChunk(const int chunk_x, const int chunk_y) const;
 
 	//-------------------------------------------

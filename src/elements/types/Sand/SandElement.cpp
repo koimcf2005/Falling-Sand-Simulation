@@ -4,9 +4,10 @@
 #include "src/components/ComponentManager.hpp"
 #include "src/components/Components.hpp"
 #include "src/matrix/Matrix.hpp"
+#include <iostream>
 
 void Sand::initialize(entt::entity entity) {
-	ComponentManager::addComponent<Velocity>(entity, Velocity(0, 0));
+	ComponentManager::addComponent<Velocity>(entity, Velocity(0, 0.1f));
 	ComponentManager::addComponent<MovementState>(entity);
 	// ComponentManager::addComponent<Health>(entity, Health(100));
 	// ComponentManager::addComponent<Temperature>(entity, Temperature(100.0f));
@@ -17,6 +18,8 @@ void Sand::update(Matrix& matrix, entt::entity entity, const int x, const int y)
 	MovementState& movementState = ComponentManager::getComponent<MovementState>(entity);
 	// Health& health = ComponentManager::getComponent<Health>(entity);
 	// Temperature& temperature = ComponentManager::getComponent<Temperature>(entity);
+	std::cout <<"eloooe\n";
+	if (velocity.vy > 0) matrix.updateChunk(x, y);
 
 	static const float GRAVITY = 0.2f;
 
@@ -42,8 +45,9 @@ void Sand::update(Matrix& matrix, entt::entity entity, const int x, const int y)
 			if (last_valid_y != y) {
 				if (matrix.entityHasComponent<Velocity>(x, y - 1)) {
 					Velocity& above_vel = matrix.getEntityComponent<Velocity>(x, y - 1);
-					above_vel.vy = velocity.vy; 
+					above_vel.vy = velocity.vy;
 				}
+
 				matrix.swapEntities(x, y, x, last_valid_y);
 				velocity.ay -= (last_valid_y - y);
 			}
@@ -63,5 +67,4 @@ void Sand::update(Matrix& matrix, entt::entity entity, const int x, const int y)
 			matrix.swapEntities(x, y, x - dir, y + 1);
 		}
 	}
-	if (velocity.vy > 0) matrix.activateChunk(x, y);
 }

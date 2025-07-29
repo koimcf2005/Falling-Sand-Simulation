@@ -53,8 +53,6 @@ int main() {
 
     DebugUI::update(
       current_time,
-      matrix->getActiveChunkCount(),
-      Chunks::CHUNKS_X * Chunks::CHUNKS_Y,
       debug_mode
     );
 

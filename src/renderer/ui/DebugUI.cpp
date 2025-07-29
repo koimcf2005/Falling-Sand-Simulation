@@ -73,7 +73,7 @@ bool DebugUI::initialize() {
   return true;
 }
 
-void DebugUI::update(const Uint32 currentTime, const int activeChunks, const int totalChunks, const bool isActive) {
+void DebugUI::update(const Uint32 currentTime, const bool isActive) {
   s_is_active = isActive;
   if (!s_is_active) return;
   
@@ -95,10 +95,7 @@ void DebugUI::update(const Uint32 currentTime, const int activeChunks, const int
 
     int memMB = getProcessMemoryMB();
 
-    std::string txt = "Chunks: " +
-              std::to_string(activeChunks) + "/" +
-              std::to_string(totalChunks) + " " +
-              std::to_string(static_cast<int>(100.0f * activeChunks / totalChunks)) + "%" +
+    std::string txt =
               "\nFPS: " + std::to_string(static_cast<int>(s_fps)) +
               "\nMem: " + std::to_string(memMB) + "MB" +
               "\nEnt: " + std::to_string(entity_count) +

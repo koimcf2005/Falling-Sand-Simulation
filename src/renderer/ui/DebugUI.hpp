@@ -25,7 +25,7 @@ public:
 	 * @param activeChunks Number of active chunks
 	 * @param totalChunks Total number of chunks
 	 */
-	static void update(const Uint32 currentTime, const int activeChunks, const int totalChunks, const bool isActive);
+	static void update(const Uint32 currentTime, const bool isActive);
 
 	/**
 	 * @brief Render the debug overlay (call after all other rendering).

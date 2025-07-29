@@ -2,8 +2,8 @@
 #define GLOBALS_HPP
 
 namespace Window {
-	const static int WIDTH = 512*2; //1152;
-	const static int HEIGHT = 512*2; //648;
+	const static int WIDTH = 512; //1152;
+	const static int HEIGHT = 512; //648;
 };
 
 namespace Simulation {
@@ -17,7 +17,7 @@ namespace Chunks {
 	const static int CHUNKS_Y = (Simulation::HEIGHT + CHUNK_SIZE - 1) / CHUNK_SIZE;
 };
 
-const static float g_PHYSICS_HZ = 60.0f;
+const static float g_PHYSICS_HZ = 5.0f;
 const static float g_MS_PER_UPDATE = 1000.0f / g_PHYSICS_HZ;
 
 #endif // GLOBALS_HPP

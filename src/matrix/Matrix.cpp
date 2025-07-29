@@ -45,25 +45,49 @@ Matrix::~Matrix() {
 //-------------------------------------------
 
 void Matrix::update() {
-  static int row_order[Simulation::WIDTH];
-  for (int x = 0; x < Simulation::WIDTH; ++x) row_order[x] = x;
+  auto process = [&](const int x, const int y) {
+    entt::entity entity = getEntity(x, y);
+    Element& element = ComponentManager::getComponent<Element>(entity);
+    if (element.step != s_matrix_step) {
+      ElementFactory::updateElementByType(element.type, *this, entity, x, y);
+      element.step = s_matrix_step;
+    }
+  };
 
   for (int y = Simulation::HEIGHT - 1; y >= 0; --y) {
-    std::shuffle(row_order, row_order + Simulation::WIDTH, RNG::s_rng);
-    for (int x : row_order) {
-      Chunk& chunk = getChunk(getChunkX(x), getChunkY(y));
-      if (chunk.isActive()) {
-        entt::entity entity = getEntity(x, y);
-        Element& element = ComponentManager::getComponent<Element>(entity);
-        if (element.step != s_matrix_step) {
-          ElementFactory::updateElementByType(element.type, *this, entity, x, y);
-          element.step = s_matrix_step;
-        }
-      }
+    if (s_matrix_step) {
+      for (int x = 0; x < Simulation::WIDTH; ++x) process(x, y);
+    }
+    else {
+      for (int x = Simulation::WIDTH - 1; x >= 0; --x) process(x, y);
     }
   }
-  for (auto& chunk : m_chunks) chunk.updateActivityState();
+  for (auto& chunk : m_chunks) chunk.commitUpdateRect();
   s_matrix_step = !s_matrix_step;
+
+  // for (auto chunk_iter = m_chunks.rbegin(); chunk_iter != m_chunks.rend(); ++chunk_iter) {
+  //     Chunk& chunk = *chunk_iter;
+  //     const SDL_Rect& rect = chunk.getCurrentUpdateRect();
+  //     if (rect.w <= 0 || rect.h <= 0) {
+  //         chunk.commitUpdateRect();
+  //         continue;
+  //     }
+  //     int start_y = std::max(rect.y, 0);
+  //     int end_y   = std::min(rect.y + rect.h, Simulation::HEIGHT);
+  //     int start_x = std::max(rect.x, 0);
+  //     int end_x   = std::min(rect.x + rect.w, Simulation::WIDTH);
+
+  //     for (int y = end_y - 1; y >= start_y; --y) {
+  //         if (s_matrix_step) {
+  //             for (int x = start_x; x < end_x; ++x) process(x, y);
+  //         } else {
+  //             for (int x = end_x - 1; x >= start_x; --x) process(x, y);
+  //         }
+  //     }
+  //     chunk.commitUpdateRect();
+  // }
+  // s_matrix_step = !s_matrix_step;
+
 }
 
 //-------------------------------------------
@@ -86,7 +110,7 @@ void Matrix::placeElement(const ElementType type, const int x, const int y) {
 
   ComponentManager::destroyEntity(entity);
   m_matrix[x + y * Simulation::WIDTH] = ElementFactory::createElementByType(type, x, y);
-  activateChunk(x, y);
+  updateChunk(x, y);
 }
 
 void Matrix::placeElementsInArea(const ElementType type, const int x, const int y, const int radius) {
@@ -136,20 +160,17 @@ void Matrix::swapEntities(const int x1, const int y1, const int x2, const int y2
     movementState->setMoving(true);
   }
 
-  activateChunk(x1, y1);
-  activateChunk(x2, y2);
+  updateChunk(x1, y1);
+  updateChunk(x2, y2);
 }
 
-void Matrix::activateChunk(const int x, const int y) {
+void Matrix::updateChunk(const int x, const int y) {
   int chunk_x = getChunkX(x);
   int chunk_y = getChunkY(y);
   if (isValidChunk(chunk_x, chunk_y)) {
     Chunk& chunk = getChunk(chunk_x, chunk_y);
-    chunk.updateRect(x, y);
-    chunk.activate();
-    chunk.activateNextFrame();
+    chunk.addNewPosition(x, y);
   }
-  // activateNeighboringChunks(x, y);
 }
 
 //-------------------------------------------
@@ -185,17 +206,21 @@ void Matrix::updateTexture() {
 
   Uint32* dst = static_cast<Uint32*>(pixels);
 
-  for (auto iter = m_chunks.crbegin(); iter != m_chunks.crend(); ++iter) {
-    const Chunk& chunk = *iter;
-    if (!chunk.wasActive()) continue;
-    const SDL_Rect& old_rect = chunk.getOldDirtyRect();
-    for (int y = old_rect.y; y < old_rect.y + old_rect.h; ++y) {
-      for (int x = old_rect.x; x < old_rect.x + old_rect.w; ++x) {
-        int index = x + y * Simulation::WIDTH;
-        SDL_Color color = getElement(x, y).color;
-        dst[index] = (color.r << 24) | (color.g << 16) | (color.b << 8) | color.a;
+  for (const auto& chunk : m_chunks) {
+      const SDL_Rect& rect = chunk.getCurrentUpdateRect();
+      if (rect.w <= 0 || rect.h <= 0) continue; // skip empty rects
+      int start_y = std::max(rect.y, 0);
+      int end_y   = std::min(rect.y + rect.h, Simulation::HEIGHT);
+      int start_x = std::max(rect.x, 0);
+      int end_x   = std::min(rect.x + rect.w, Simulation::WIDTH);
+
+      for (int y = start_y; y < end_y; ++y) {
+          for (int x = start_x; x < end_x; ++x) {
+              int index = x + y * Simulation::WIDTH;
+              SDL_Color color = getElement(x, y).color;
+              dst[index] = (color.r << 24) | (color.g << 16) | (color.b << 8) | color.a;
+          }
       }
-    }
   }
 
   SDL_UnlockTexture(m_simulation_texture);
@@ -210,8 +235,7 @@ void Matrix::updateTexture() {
         1,
         {0, 0, 255, 255}
       );
-      if (!chunk.isActive()) continue;
-      const SDL_Rect& rect = chunk.getOldDirtyRect();
+      const SDL_Rect& rect = chunk.getCurrentUpdateRect();
       Renderer::drawScreenSpaceRect(
         rect.x,
         rect.y,
@@ -243,14 +267,6 @@ int Matrix::getChunkY(const int y) const { return y / Chunks::CHUNK_SIZE; }
 
 Chunk& Matrix::getChunk(const int chunk_x, const int chunk_y) { return m_chunks[chunk_x + chunk_y * Chunks::CHUNKS_X]; }
 const Chunk& Matrix::getChunk(const int chunk_x, const int chunk_y) const { return m_chunks[chunk_x + chunk_y * Chunks::CHUNKS_X]; }
-
-int Matrix::getActiveChunkCount() const {
-  int count = 0;
-  for (auto& chunk : m_chunks) {
-    if (chunk.isActive()) ++count;
-  }
-  return count;
-}
 
 //-------------------------------------------
 // Element Getters 
@@ -292,23 +308,6 @@ entt::entity Matrix::getEntity(const int x, const int y) const {
 //-------------------------------------------
 // Chunk helper functions
 //-------------------------------------------
-
-void Matrix::activateNeighboringChunks(const int x, const int y) {
-  std::set<std::pair<int, int>> neighbors;
-
-  if ((x % Chunks::CHUNK_SIZE) == 0) neighbors.emplace(getChunkX(x) - 1, getChunkY(y));
-  if ((x % Chunks::CHUNK_SIZE) == Chunks::CHUNK_SIZE - 1) neighbors.emplace(getChunkX(x) + 1, getChunkY(y));
-  if ((y % Chunks::CHUNK_SIZE) == 0) neighbors.emplace(getChunkX(x), getChunkY(y) - 1);
-  if ((y % Chunks::CHUNK_SIZE) == Chunks::CHUNK_SIZE - 1) neighbors.emplace(getChunkX(x), getChunkY(y) + 1);
-
-  for (const auto& [chunk_x, chunk_y] : neighbors) {
-      if (isValidChunk(chunk_x, chunk_y)) {
-        Chunk& chunk = getChunk(chunk_x, chunk_y);
-        chunk.activate();
-        chunk.activateNextFrame();
-      }
-  }
-}
 
 bool Matrix::isValidChunk(const int chunk_x, const int chunk_y) const {
   return chunk_x >= 0 && chunk_x < Chunks::CHUNKS_X && chunk_y >= 0 && chunk_y < Chunks::CHUNKS_Y;
