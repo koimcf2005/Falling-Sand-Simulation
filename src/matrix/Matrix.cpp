@@ -12,10 +12,12 @@
 // Constructor and Destructor
 //-------------------------------------------
 
+/**
+ * @brief Constructs the Matrix object, initializing chunks and elements.
+ */
 Matrix::Matrix()
 : m_matrix{},
   m_chunks{},
-  m_simulation_texture{nullptr},
   m_debug_mode{false}
 {
   for (int chunk_y = 0; chunk_y < Chunks::CHUNKS_Y; ++chunk_y) {
@@ -34,16 +36,13 @@ Matrix::Matrix()
   std::cout << element_count << " Elements initialized." << std::endl;
 }
 
-Matrix::~Matrix() {
-  if (m_simulation_texture) {
-    SDL_DestroyTexture(m_simulation_texture);
-  }
-}
-
 //-------------------------------------------
-// Main update loop
+// Main Update Loop
 //-------------------------------------------
 
+/**
+ * @brief Updates the simulation by processing elements and committing chunk updates.
+ */
 void Matrix::update() {
   auto process = [&](const int x, const int y) {
     entt::entity entity = getEntity(x, y);
@@ -64,44 +63,59 @@ void Matrix::update() {
   }
   for (auto& chunk : m_chunks) chunk.commitUpdateRect();
   s_matrix_step = !s_matrix_step;
+}
 
-  // for (auto chunk_iter = m_chunks.rbegin(); chunk_iter != m_chunks.rend(); ++chunk_iter) {
-  //     Chunk& chunk = *chunk_iter;
-  //     const SDL_Rect& rect = chunk.getCurrentUpdateRect();
-  //     if (rect.w <= 0 || rect.h <= 0) {
-  //         chunk.commitUpdateRect();
-  //         continue;
-  //     }
-  //     int start_y = std::max(rect.y, 0);
-  //     int end_y   = std::min(rect.y + rect.h, Simulation::HEIGHT);
-  //     int start_x = std::max(rect.x, 0);
-  //     int end_x   = std::min(rect.x + rect.w, Simulation::WIDTH);
+int Matrix::s_debug_index = -1;
+void Matrix::updateCellByCell(const int step_count) {
+  std::cout << s_debug_index << '\n';
+  for (int step = 0; step < step_count; ++step) {
+    int x = s_debug_index % Simulation::WIDTH;
+    int y = s_debug_index / Simulation::WIDTH;
 
-  //     for (int y = end_y - 1; y >= start_y; --y) {
-  //         if (s_matrix_step) {
-  //             for (int x = start_x; x < end_x; ++x) process(x, y);
-  //         } else {
-  //             for (int x = end_x - 1; x >= start_x; --x) process(x, y);
-  //         }
-  //     }
-  //     chunk.commitUpdateRect();
-  // }
-  // s_matrix_step = !s_matrix_step;
-
+    entt::entity entity = m_matrix[s_debug_index];
+    Element& element = ComponentManager::getComponent<Element>(entity);
+    if (element.step != s_matrix_step) {
+      ElementFactory::updateElementByType(element.type, *this, entity, x, y);
+      element.step = s_matrix_step;
+    }
+    --s_debug_index;
+    if (s_debug_index < 0) {
+      s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - 1;
+      s_matrix_step = !s_matrix_step;
+    }
+  }
 }
 
 //-------------------------------------------
-// Element Management 
+// Element Management
 //-------------------------------------------
 
+/**
+ * @brief Checks if the given coordinates are within the simulation bounds.
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ * @return True if the coordinates are within bounds, false otherwise.
+ */
 bool Matrix::isInBounds(const int x, const int y) const {
   return x >= 0 && x < Simulation::WIDTH && y >= 0 && y < Simulation::HEIGHT;
 }
 
+/**
+ * @brief Checks if the given coordinates are empty (contain no element).
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ * @return True if the coordinates are empty, false otherwise.
+ */
 bool Matrix::isEmpty(const int x, const int y) const {
   return getElement(x, y).type == EMPTY;
 }
 
+/**
+ * @brief Places an element of the specified type at the given coordinates.
+ * @param type The type of element to place.
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ */
 void Matrix::placeElement(const ElementType type, const int x, const int y) {
   if (!isInBounds(x, y)) return;
   entt::entity entity = getEntity(x, y);
@@ -113,6 +127,13 @@ void Matrix::placeElement(const ElementType type, const int x, const int y) {
   updateChunk(x, y);
 }
 
+/**
+ * @brief Places elements of the specified type in a circular area.
+ * @param type The type of element to place.
+ * @param x Center X-coordinate.
+ * @param y Center Y-coordinate.
+ * @param radius Radius of the circular area.
+ */
 void Matrix::placeElementsInArea(const ElementType type, const int x, const int y, const int radius) {
   int r2 = std::max(1, radius * radius - 1);
   if (r2 == 1) {
@@ -130,6 +151,13 @@ void Matrix::placeElementsInArea(const ElementType type, const int x, const int 
   }
 }
 
+/**
+ * @brief Swaps the entities at two given coordinates.
+ * @param x1 X-coordinate of the first entity.
+ * @param y1 Y-coordinate of the first entity.
+ * @param x2 X-coordinate of the second entity.
+ * @param y2 Y-coordinate of the second entity.
+ */
 void Matrix::swapEntities(const int x1, const int y1, const int x2, const int y2) {
   if (!isInBounds(x1, y1) || !isInBounds(x2, y2)) {
     return;
@@ -150,6 +178,9 @@ void Matrix::swapEntities(const int x1, const int y1, const int x2, const int y2
   element1.step = s_matrix_step;
   element2.step = s_matrix_step;
 
+  updateChunk(x1, y1);
+  updateChunk(x2, y2);
+
   if (auto* movementState = ComponentManager::getComponentIfExists<MovementState>(entity1)) {
     movementState->setMovedThisFrame(true);
     movementState->setMoving(true);
@@ -159,92 +190,33 @@ void Matrix::swapEntities(const int x1, const int y1, const int x2, const int y2
     movementState->setMovedThisFrame(true);
     movementState->setMoving(true);
   }
-
-  updateChunk(x1, y1);
-  updateChunk(x2, y2);
 }
 
+/**
+ * @brief Updates the chunk containing the given coordinates.
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ */
 void Matrix::updateChunk(const int x, const int y) {
-  int chunk_x = getChunkX(x);
-  int chunk_y = getChunkY(y);
-  if (isValidChunk(chunk_x, chunk_y)) {
-    Chunk& chunk = getChunk(chunk_x, chunk_y);
-    chunk.addNewPosition(x, y);
-  }
+  Chunk& chunk = m_chunks[getChunkX(x) + getChunkY(y) * Chunks::CHUNKS_X];
+  chunk.addNewPosition(x, y);
 }
 
 //-------------------------------------------
-// Rendering and Debug 
+// Rendering and Debug
 //-------------------------------------------
 
-void Matrix::toggleDebugMode() { m_debug_mode = !m_debug_mode; }
-SDL_Texture* Matrix::getTexture() const { return m_simulation_texture; }
-
-void Matrix::initializeTexture(SDL_Renderer* renderer) {
-  // Clean up existing texture if any
-  if (m_simulation_texture) {
-    SDL_DestroyTexture(m_simulation_texture);
-  }
-
-  // Create streaming texture for efficient updates
-  m_simulation_texture = SDL_CreateTexture(
-    renderer, 
-    SDL_PIXELFORMAT_RGBA8888,
-    SDL_TEXTUREACCESS_STREAMING,
-    Simulation::WIDTH,
-    Simulation::HEIGHT
-  );
-  SDL_SetTextureBlendMode(m_simulation_texture, SDL_BLENDMODE_BLEND);
-}
-
-void Matrix::updateTexture() {
-  void* pixels;
-  int pitch;
-  if (SDL_LockTexture(m_simulation_texture, nullptr, &pixels, &pitch) != 0) {
-      return;
-  }
-
-  Uint32* dst = static_cast<Uint32*>(pixels);
-
-  for (const auto& chunk : m_chunks) {
-      const SDL_Rect& rect = chunk.getCurrentUpdateRect();
-      if (rect.w <= 0 || rect.h <= 0) continue; // skip empty rects
-      int start_y = std::max(rect.y, 0);
-      int end_y   = std::min(rect.y + rect.h, Simulation::HEIGHT);
-      int start_x = std::max(rect.x, 0);
-      int end_x   = std::min(rect.x + rect.w, Simulation::WIDTH);
-
-      for (int y = start_y; y < end_y; ++y) {
-          for (int x = start_x; x < end_x; ++x) {
-              int index = x + y * Simulation::WIDTH;
-              SDL_Color color = getElement(x, y).color;
-              dst[index] = (color.r << 24) | (color.g << 16) | (color.b << 8) | color.a;
-          }
-      }
-  }
-
-  SDL_UnlockTexture(m_simulation_texture);
-
+/**
+ * @brief Toggles the debug mode for rendering.
+ */
+void Matrix::toggleDebugMode() {
   if (m_debug_mode) {
-    for (auto& chunk : m_chunks) {
-      Renderer::drawScreenSpaceRect(
-        chunk.getLeftX(),
-        chunk.getTopY(),
-        Chunks::CHUNK_SIZE,
-        Chunks::CHUNK_SIZE,
-        1,
-        {0, 0, 255, 255}
-      );
-      const SDL_Rect& rect = chunk.getCurrentUpdateRect();
-      Renderer::drawScreenSpaceRect(
-        rect.x,
-        rect.y,
-        rect.w,
-        rect.h,
-        1,
-        {255, 0, 0, 255}
-      );
-    }
+    m_debug_mode = false;
+    s_debug_index = -1;
+  }
+  else {
+    m_debug_mode = true;
+    s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - 1;
   }
 }
 
@@ -252,26 +224,70 @@ void Matrix::updateTexture() {
 // Global Static Step
 //-------------------------------------------
 
+/**
+ * @brief Static member variable to track the simulation step state.
+ */
 bool Matrix::s_matrix_step = false;
 
+/**
+ * @brief Gets the current simulation step state.
+ * @return True if the current step is active, false otherwise.
+ */
 bool Matrix::getStep() {
   return s_matrix_step;
+}
+
+int Matrix::getDebugIndex() {
+  return s_debug_index;
 }
 
 //-------------------------------------------
 // Chunk Getters
 //-------------------------------------------
 
+/**
+ * @brief Gets the chunk X-coordinate for a given simulation X-coordinate.
+ * @param x Simulation X-coordinate.
+ * @return Chunk X-coordinate.
+ */
 int Matrix::getChunkX(const int x) const { return x / Chunks::CHUNK_SIZE; }
+
+/**
+ * @brief Gets the chunk Y-coordinate for a given simulation Y-coordinate.
+ * @param y Simulation Y-coordinate.
+ * @return Chunk Y-coordinate.
+ */
 int Matrix::getChunkY(const int y) const { return y / Chunks::CHUNK_SIZE; }
 
+/**
+ * @brief Gets a reference to a chunk at the specified chunk coordinates.
+ * @param chunk_x Chunk X-coordinate.
+ * @param chunk_y Chunk Y-coordinate.
+ * @return Reference to the Chunk object.
+ */
 Chunk& Matrix::getChunk(const int chunk_x, const int chunk_y) { return m_chunks[chunk_x + chunk_y * Chunks::CHUNKS_X]; }
+
+/**
+ * @brief Gets a constant reference to a chunk at the specified chunk coordinates.
+ * @param chunk_x Chunk X-coordinate.
+ * @param chunk_y Chunk Y-coordinate.
+ * @return Constant reference to the Chunk object.
+ */
 const Chunk& Matrix::getChunk(const int chunk_x, const int chunk_y) const { return m_chunks[chunk_x + chunk_y * Chunks::CHUNKS_X]; }
 
+const std::array<Chunk, Chunks::CHUNKS_X * Chunks::CHUNKS_Y>& Matrix::getChunks() const { return m_chunks; }
+
 //-------------------------------------------
-// Element Getters 
+// Element Getters
 //-------------------------------------------
 
+/**
+ * @brief Gets a reference to the element at the specified coordinates.
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ * @return Reference to the Element object.
+ * @throws std::out_of_range if the coordinates are out of bounds.
+ */
 Element& Matrix::getElement(const int x, const int y) {
   if (!isInBounds(x, y)) {
     throw std::out_of_range("Matrix::getElement: coordinates out of bounds");
@@ -279,7 +295,13 @@ Element& Matrix::getElement(const int x, const int y) {
   return ComponentManager::getComponent<Element>(m_matrix[x + y * Simulation::WIDTH]);
 }
 
-
+/**
+ * @brief Gets a constant reference to the element at the specified coordinates.
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ * @return Constant reference to the Element object.
+ * @throws std::out_of_range if the coordinates are out of bounds.
+ */
 Element& Matrix::getElement(const int x, const int y) const {
   if (!isInBounds(x, y)) {
     throw std::out_of_range("Matrix::getElement: coordinates out of bounds");
@@ -288,9 +310,15 @@ Element& Matrix::getElement(const int x, const int y) const {
 }
 
 //-------------------------------------------
-// Entity Getters 
+// Entity Getters
 //-------------------------------------------
 
+/**
+ * @brief Gets the entity at the specified coordinates.
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ * @return The entity at the given coordinates, or entt::null if out of bounds.
+ */
 entt::entity Matrix::getEntity(const int x, const int y) {
   if (!isInBounds(x, y)) {
     return entt::null;
@@ -298,6 +326,12 @@ entt::entity Matrix::getEntity(const int x, const int y) {
   return m_matrix[x + y * Simulation::WIDTH];
 }
 
+/**
+ * @brief Gets the entity at the specified coordinates (const version).
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ * @return The entity at the given coordinates, or entt::null if out of bounds.
+ */
 entt::entity Matrix::getEntity(const int x, const int y) const {
   if (!isInBounds(x, y)) {
     return entt::null;
@@ -306,9 +340,15 @@ entt::entity Matrix::getEntity(const int x, const int y) const {
 }
 
 //-------------------------------------------
-// Chunk helper functions
+// Chunk Helper Functions
 //-------------------------------------------
 
+/**
+ * @brief Checks if the given chunk coordinates are valid.
+ * @param chunk_x Chunk X-coordinate.
+ * @param chunk_y Chunk Y-coordinate.
+ * @return True if the chunk coordinates are valid, false otherwise.
+ */
 bool Matrix::isValidChunk(const int chunk_x, const int chunk_y) const {
   return chunk_x >= 0 && chunk_x < Chunks::CHUNKS_X && chunk_y >= 0 && chunk_y < Chunks::CHUNKS_Y;
 }

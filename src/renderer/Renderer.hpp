@@ -3,6 +3,7 @@
 
 #include "src/matrix/Matrix.hpp"
 #include "src/core/Globals.hpp"
+#include "src/renderer/SimulationTexture.hpp"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -25,7 +26,8 @@ public:
 	static bool initialize(const char* title);
 
 	/**
-	 * @brief Clear the screen to black.
+	 * @brief Clear the screen to black.#include "src/renderer/SimulationTexture.hpp"
+
 	 */
 	static void clear();
 
@@ -74,7 +76,7 @@ public:
 	 * @param matrix CellularMatrix to render
 	 * @param showDebug Whether to show the debug overlay
 	 */
-	static void renderScene(Matrix& matrix);
+	static void renderScene(Matrix& matrix, SimulationTexture& simulation_texture);
 
 	/**
 	 * @brief Get the underlying SDL_Renderer pointer.

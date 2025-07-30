@@ -1,5 +1,4 @@
 #include "src/renderer/Renderer.hpp"
-
 #include "src/renderer/ui/DebugUI.hpp"
 
 #include <iostream>
@@ -95,13 +94,13 @@ void Renderer::setWindowResolution() {
 	SDL_RenderSetLogicalSize(sp_renderer, 0, 0);
 }
 
-void Renderer::renderScene(Matrix& matrix) {
+void Renderer::renderScene(Matrix& matrix, SimulationTexture& simulation_texture) {
 	// Render the simulation scene, UI, and debug overlays
 	clear();
 
 	// Draw low-res game world
-	matrix.updateTexture();
-	drawTexture(matrix.getTexture());
+	simulation_texture.updateTexture(matrix);
+	drawTexture(simulation_texture.getTexture());
 
 	// // Switch to full-res and render overlays
 	setWindowResolution();

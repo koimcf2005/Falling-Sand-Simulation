@@ -7,8 +7,8 @@ namespace Window {
 };
 
 namespace Simulation {
-	const static int WIDTH = 512/2; //384;
-	const static int HEIGHT = 512/2; //216;
+	const static int WIDTH = 512/8; //384;
+	const static int HEIGHT = 512/8; //216;
 };
 
 namespace Chunks {
@@ -17,7 +17,7 @@ namespace Chunks {
 	const static int CHUNKS_Y = (Simulation::HEIGHT + CHUNK_SIZE - 1) / CHUNK_SIZE;
 };
 
-const static float g_PHYSICS_HZ = 5.0f;
+const static float g_PHYSICS_HZ = 60.0f;
 const static float g_MS_PER_UPDATE = 1000.0f / g_PHYSICS_HZ;
 
 #endif // GLOBALS_HPP

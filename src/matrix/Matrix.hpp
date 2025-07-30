@@ -14,20 +14,21 @@
 
 class Matrix {
 public:
-  //-------------------------------------------
-  // Constructor and Destructor
-  //-------------------------------------------
+	//-------------------------------------------
+	// Constructor and Destructor
+	//-------------------------------------------
 	Matrix();
-	~Matrix();
+	~Matrix() = default;
 
-  //-------------------------------------------
-  // Main update loop
-  //-------------------------------------------
+	//-------------------------------------------
+	// Main update loop
+	//-------------------------------------------
 	void update();
+	void updateCellByCell(const int step_count = 1);
 
-  //-------------------------------------------
-  // Element Management 
-  //-------------------------------------------
+	//-------------------------------------------
+	// Element Management 
+	//-------------------------------------------
 	bool isInBounds(const int x, const int y) const;
 
 	bool isEmpty(const int x, const int y) const;
@@ -43,15 +44,12 @@ public:
   // Rendering and Debug 
   //-------------------------------------------
 	void toggleDebugMode();
-
-	SDL_Texture* getTexture() const;
-	void initializeTexture(SDL_Renderer* renderer);
-	void updateTexture();
 	
 	//-------------------------------------------
   // Global Static Step
   //-------------------------------------------
 	static bool getStep();
+	static int getDebugIndex();
 
 	//-------------------------------------------
   // Chunk Getters
@@ -62,15 +60,17 @@ public:
 	Chunk& getChunk(const int chunk_x, const int chunk_y);
 	const Chunk& getChunk(const int chunk_x, const int chunk_y) const;
 
+	const std::array<Chunk, Chunks::CHUNKS_X * Chunks::CHUNKS_Y>& getChunks() const;
+
 	//-------------------------------------------
-  // Element Getters 
-  //-------------------------------------------
+	// Element Getters 
+	//-------------------------------------------
 	Element& getElement(const int x, const int y);
 	Element& getElement(const int x, const int y) const;
 
 	//-------------------------------------------
-  // Entity Getters 
-  //-------------------------------------------
+	// Entity Getters 
+	//-------------------------------------------
 	entt::entity getEntity(const int x, const int y);
 	entt::entity getEntity(const int x, const int y) const;
 
@@ -100,25 +100,25 @@ public:
 
 private:
 	//-------------------------------------------
-  // Chunk helper functions
-  //-------------------------------------------
+	// Chunk helper functions
+	//-------------------------------------------
 	bool isValidChunk(const int chunk_x, const int chunk_y) const;
 
 	//-------------------------------------------
-  // Member Variables
-  //-------------------------------------------
+	// Member Variables
+	//-------------------------------------------
 	std::array<entt::entity, Simulation::WIDTH * Simulation::HEIGHT> m_matrix;
-	
+
 	std::array<Chunk, Chunks::CHUNKS_X * Chunks::CHUNKS_Y> m_chunks;
-	
-	SDL_Texture* m_simulation_texture;
-	
+
 	bool m_debug_mode;
 
 	//-------------------------------------------
-  // Static Variables
-  //-------------------------------------------
+	// Static Variables
+	//-------------------------------------------
 	static bool s_matrix_step;
+
+	static int s_debug_index;
 };
 
 

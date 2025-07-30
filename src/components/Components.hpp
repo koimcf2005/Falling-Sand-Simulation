@@ -17,6 +17,14 @@ enum MovementFlags : uint8_t {
 struct MovementState {
   uint8_t flags = 0;
 
+	MovementState() = default;
+	MovementState(bool is_moving, bool was_moving, bool moved_this_frame)
+	: flags(0) {
+		if (is_moving) set(IsMoving);
+		if (was_moving) set(WasMoving);
+		if (moved_this_frame) set(MovedThisFrame);
+	}
+
   void set(MovementFlags f) { flags |= f; }
   void clear(MovementFlags f) { flags &= ~f; }
   bool has(MovementFlags f) const { return (flags & f) != 0; }
