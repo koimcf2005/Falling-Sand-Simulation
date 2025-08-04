@@ -1,4 +1,4 @@
-// ElementUtilities.cpp
+// Utilities.hpp
 // Copyright (C) 2025 Koi McFarland
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,22 @@
 //
 // Author: koimcf168@gmail.com
 //
-// Implements utility functions for element interactions, such as checking if
-// elements can be swapped in the simulation matrix.
+// Declares utility functions for random number generation and other helpers
+// used throughout the simulation.
 
-#include "falling-sand-sim/elements/ElementUtilities.hpp"
+#ifndef UTILITIES_HPP
+#define UTILITIES_HPP
 
-#include "falling-sand-sim/elements/ElementTypes.hpp"
-#include "falling-sand-sim/world/Matrix.hpp"
+#include <algorithm>
+#include <random>
 
-bool ElementUtilities::canSwapWithElement(const Matrix& matrix, const int x, const int y) {
-	if (!matrix.isInBounds(x, y)) return false;
-	if (matrix.getElement(x, y).type != EMPTY) return false;
-	return true;
-}
+class RNG {
+public:
+	static bool getRandomChance(const float percent);
+	static int getRandomDirection();
+	static float getRandomFloat(const float min, float max);
+	static int getRandomInt(const int min, int max);
+	static std::mt19937 s_rng;
+};
+
+#endif // UTILITIES_HPP

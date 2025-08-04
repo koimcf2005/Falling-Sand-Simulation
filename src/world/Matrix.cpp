@@ -1,8 +1,30 @@
-#include "src/matrix/Matrix.hpp"
+// Matrix.cpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Implements the Matrix class, which manages the simulation grid, element
+// placement, updates, and chunk management.
 
-#include "src/elements/ElementFactory.hpp"
-#include "src/renderer/Renderer.hpp"
-#include "src/core/Utilities.hpp"
+#include "falling-sand-sim/world/Matrix.hpp"
+
+#include "falling-sand-sim/components/EnTTManager.hpp"
+#include "falling-sand-sim/elements/ElementFactory.hpp"
+#include "falling-sand-sim/renderer/Renderer.hpp"
+#include "falling-sand-sim/utils/Utilities.hpp"
 
 #include <iostream>
 #include <vector>
@@ -43,44 +65,81 @@ Matrix::Matrix()
 /**
  * @brief Updates the simulation by processing elements and committing chunk updates.
  */
+static int count = 0;
 void Matrix::update() {
   auto process = [&](const int x, const int y) {
     entt::entity entity = getEntity(x, y);
-    Element& element = ComponentManager::getComponent<Element>(entity);
+    Element& element = EnTTManager::getComponent<Element>(entity);
     if (element.step != s_matrix_step) {
       ElementFactory::updateElementByType(element.type, *this, entity, x, y);
       element.step = s_matrix_step;
     }
   };
 
-  for (int y = Simulation::HEIGHT - 1; y >= 0; --y) {
-    if (s_matrix_step) {
-      for (int x = 0; x < Simulation::WIDTH; ++x) process(x, y);
-    }
-    else {
-      for (int x = Simulation::WIDTH - 1; x >= 0; --x) process(x, y);
+  // Commit update rects before processing so new placements are processed immediately
+  for (auto& chunk : m_chunks) {
+    chunk.commitUpdateRect();
+  }
+
+  for (auto chunk_iter = m_chunks.rbegin(); chunk_iter != m_chunks.rend(); ++chunk_iter) {
+    Chunk& chunk = *chunk_iter;
+    const SDL_Rect& rect = chunk.getCurrentUpdateRect();
+
+    // Only process cells inside the update rect
+    if (rect.w > 0 && rect.h > 0) {
+      if (s_matrix_step) {
+        for (int y = rect.y + rect.h - 1; y >= rect.y; --y) {
+          for (int x = rect.x + rect.w - 1; x >= rect.x; --x) {
+            process(x, y);
+          }
+        }
+      } else {
+        for (int y = rect.y + rect.h - 1; y >= rect.y; --y) {
+          for (int x = rect.x; x < rect.x + rect.w; ++x) {
+            process(x, y);
+          }
+        }
+      }
     }
   }
-  for (auto& chunk : m_chunks) chunk.commitUpdateRect();
   s_matrix_step = !s_matrix_step;
 }
 
 int Matrix::s_debug_index = -1;
-void Matrix::updateCellByCell(const int step_count) {
-  std::cout << s_debug_index << '\n';
+void Matrix::updateCellByCell(int step_count) {
+  if (!m_debug_mode) return;
+
+  if (step_count < 0) step_count = s_debug_index + 1;
+
   for (int step = 0; step < step_count; ++step) {
     int x = s_debug_index % Simulation::WIDTH;
     int y = s_debug_index / Simulation::WIDTH;
-
+    
     entt::entity entity = m_matrix[s_debug_index];
-    Element& element = ComponentManager::getComponent<Element>(entity);
+    Element& element = EnTTManager::getComponent<Element>(entity);
     if (element.step != s_matrix_step) {
       ElementFactory::updateElementByType(element.type, *this, entity, x, y);
       element.step = s_matrix_step;
     }
-    --s_debug_index;
+
+    if (s_matrix_step) --x;
+    else ++x;
+
+    if (x >= Simulation::WIDTH) {
+      x = 0;
+      --y;
+    }
+    else if (x < 0) {
+      x = Simulation::WIDTH - 1;
+      --y;
+    }
+
+    s_debug_index = x + y * Simulation::WIDTH;
+
     if (s_debug_index < 0) {
-      s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - 1;
+      if (s_matrix_step) s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - Simulation::WIDTH;
+      else s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - 1;
+      for (auto& chunk : m_chunks) chunk.commitUpdateRect();
       s_matrix_step = !s_matrix_step;
     }
   }
@@ -119,12 +178,13 @@ bool Matrix::isEmpty(const int x, const int y) const {
 void Matrix::placeElement(const ElementType type, const int x, const int y) {
   if (!isInBounds(x, y)) return;
   entt::entity entity = getEntity(x, y);
-  Element& element = ComponentManager::getComponent<Element>(entity);
+  Element& element = EnTTManager::getComponent<Element>(entity);
   if (element.type == type) return;
 
-  ComponentManager::destroyEntity(entity);
+  EnTTManager::destroyEntity(entity);
   m_matrix[x + y * Simulation::WIDTH] = ElementFactory::createElementByType(type, x, y);
-  updateChunk(x, y);
+  Chunk& chunk = m_chunks[getChunkX(x) + getChunkY(y) * Chunks::CHUNKS_X];
+  chunk.updateWholeChunk();
 }
 
 /**
@@ -169,8 +229,8 @@ void Matrix::swapEntities(const int x1, const int y1, const int x2, const int y2
 
   entt::entity entity1 = m_matrix[x1 + y1 * Simulation::WIDTH];
   entt::entity entity2 = m_matrix[x2 + y2 * Simulation::WIDTH];
-  Element& element1 = ComponentManager::getComponent<Element>(entity1);
-  Element& element2 = ComponentManager::getComponent<Element>(entity2);
+  Element& element1 = EnTTManager::getComponent<Element>(entity1);
+  Element& element2 = EnTTManager::getComponent<Element>(entity2);
 
   m_matrix[x1 + y1 * Simulation::WIDTH] = m_matrix[x2 + y2 * Simulation::WIDTH];
   m_matrix[x2 + y2 * Simulation::WIDTH] = entity1;
@@ -181,12 +241,12 @@ void Matrix::swapEntities(const int x1, const int y1, const int x2, const int y2
   updateChunk(x1, y1);
   updateChunk(x2, y2);
 
-  if (auto* movementState = ComponentManager::getComponentIfExists<MovementState>(entity1)) {
+  if (auto* movementState = EnTTManager::getComponentIfExists<MovementState>(entity1)) {
     movementState->setMovedThisFrame(true);
     movementState->setMoving(true);
   }
 
-  if (auto* movementState = ComponentManager::getComponentIfExists<MovementState>(entity2)) {
+  if (auto* movementState = EnTTManager::getComponentIfExists<MovementState>(entity2)) {
     movementState->setMovedThisFrame(true);
     movementState->setMoving(true);
   }
@@ -212,6 +272,7 @@ void Matrix::updateChunk(const int x, const int y) {
 void Matrix::toggleDebugMode() {
   if (m_debug_mode) {
     m_debug_mode = false;
+    updateCellByCell(-1);
     s_debug_index = -1;
   }
   else {
@@ -292,7 +353,7 @@ Element& Matrix::getElement(const int x, const int y) {
   if (!isInBounds(x, y)) {
     throw std::out_of_range("Matrix::getElement: coordinates out of bounds");
   }
-  return ComponentManager::getComponent<Element>(m_matrix[x + y * Simulation::WIDTH]);
+  return EnTTManager::getComponent<Element>(m_matrix[x + y * Simulation::WIDTH]);
 }
 
 /**
@@ -306,7 +367,7 @@ Element& Matrix::getElement(const int x, const int y) const {
   if (!isInBounds(x, y)) {
     throw std::out_of_range("Matrix::getElement: coordinates out of bounds");
   }
-  return ComponentManager::getComponent<Element>(m_matrix[x + y * Simulation::WIDTH]);
+  return EnTTManager::getComponent<Element>(m_matrix[x + y * Simulation::WIDTH]);
 }
 
 //-------------------------------------------

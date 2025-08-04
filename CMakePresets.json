@@ -25,6 +25,16 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "testing",
+      "displayName": "Testing Build",
+      "description": "Build for running tests",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/testing",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Testing"
+      }
     }
   ],
   "buildPresets": [
@@ -35,6 +45,10 @@
     {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "testing",
+      "configurePreset": "testing"
     }
   ],
   "testPresets": [
@@ -45,6 +59,10 @@
     {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "testing",
+      "configurePreset": "testing"
     }
   ]
 }

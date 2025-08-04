@@ -1,4 +1,4 @@
-// ElementUtilities.cpp
+// EnTTManager.cpp
 // Copyright (C) 2025 Koi McFarland
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,9 @@
 //
 // Author: koimcf168@gmail.com
 //
-// Implements utility functions for element interactions, such as checking if
-// elements can be swapped in the simulation matrix.
+// Implements the static registry for EnTTManager, enabling global ECS access.
 
-#include "falling-sand-sim/elements/ElementUtilities.hpp"
+#include "falling-sand-sim/components/EnTTManager.hpp"
 
-#include "falling-sand-sim/elements/ElementTypes.hpp"
-#include "falling-sand-sim/world/Matrix.hpp"
-
-bool ElementUtilities::canSwapWithElement(const Matrix& matrix, const int x, const int y) {
-	if (!matrix.isInBounds(x, y)) return false;
-	if (matrix.getElement(x, y).type != EMPTY) return false;
-	return true;
-}
+// Definition of the static registry member
+entt::registry EnTTManager::registry;

@@ -1,11 +1,32 @@
-#ifndef COMPONENT_MANAGER_HPP
-#define COMPONENT_MANAGER_HPP
+// EnTTManager.hpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Provides a static interface for managing ECS entities and components using
+// the EnTT library. Handles creation, destruction, and access to components.
 
-#include "src/components/Components.hpp"
+#ifndef ENTT_MANAGER_HPP
+#define ENTT_MANAGER_HPP
+
+#include "falling-sand-sim/components/Components.hpp"
 
 #include <entt/entt.hpp>
 
-class ComponentManager {
+class EnTTManager {
 public:
     static entt::entity createEntity() {
         return registry.create();
@@ -49,4 +70,4 @@ private:
     static entt::registry registry;
 };
 
-#endif // COMPONENT_MANAGER_HPP
+#endif // ENTT_MANAGER_HPP

@@ -1,5 +1,27 @@
-#include "src/renderer/Renderer.hpp"
-#include "src/renderer/ui/DebugUI.hpp"
+// Renderer.cpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Implements the Renderer class for SDL window, rendering, and drawing
+// utilities for the Falling Sand Simulation.
+
+#include "falling-sand-sim/renderer/Renderer.hpp"
+
+#include "falling-sand-sim/renderer/SystemStatsDisplay.hpp"
 
 #include <iostream>
 
@@ -8,13 +30,17 @@
 //------------------------------------------------------------------------------
 SDL_Window* Renderer::sp_window = nullptr;
 SDL_Renderer* Renderer::sp_renderer = nullptr;
-TTF_Font* Renderer::sp_font = nullptr;
 std::vector<Renderer::ScreenRect> Renderer::s_queued_rects;
+bool Renderer::s_is_window_resolution = true;
 
 //------------------------------------------------------------------------------
 // Initialization
 //------------------------------------------------------------------------------
 bool Renderer::initialize(const char* title) {
+
+  //------------------------------------------------------------------------------
+  // SDL2 Initialization
+  //------------------------------------------------------------------------------
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 			std::cerr << "SDL init failed: " << SDL_GetError() << '\n';
 			return false;
@@ -38,6 +64,7 @@ bool Renderer::initialize(const char* title) {
 			Window::HEIGHT, 
 			SDL_WINDOW_SHOWN
 	);
+
 	if (!sp_window) {
 			std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
 			return false;
@@ -47,25 +74,21 @@ bool Renderer::initialize(const char* title) {
 			sp_window, -1, 
 			SDL_RENDERER_ACCELERATED
 	);
+
 	if (!sp_renderer) {
 			std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
 			return false;
 	}
 
-	// // Construct UI overlays with the renderer
-	// mp_ElementUI = new ElementUI(msp_renderer);
-
-	// // Initialize UI overlays
-	// if (!mp_ElementUI->initialize()) {
-	// 	std::cerr << "Failed to initialize Element UI\n";
-	// 	cleanup();
-	// 	return false;
-	// }
-	if (!DebugUI::initialize()) {
+  //------------------------------------------------------------------------------
+  // Custom Initialization
+  //------------------------------------------------------------------------------
+	if (!SystemStatsDisplay::initialize()) {
 		std::cerr << "Failed to initialize Debug UI\n";
 		cleanup();
 		return false;
 	}
+
 	return true;
 }
 
@@ -86,30 +109,43 @@ void Renderer::present() {
 
 void Renderer::setSimulationResolution() {
 	// Set logical rendering size to simulation grid size
-	SDL_RenderSetLogicalSize(sp_renderer, Simulation::WIDTH, Simulation::HEIGHT);
+  if (s_is_window_resolution) {
+    SDL_RenderSetLogicalSize(sp_renderer, Simulation::WIDTH, Simulation::HEIGHT);
+    s_is_window_resolution = false;
+  }
 }
 
 void Renderer::setWindowResolution() {
 	// Reset logical rendering size to window size (full resolution)
-	SDL_RenderSetLogicalSize(sp_renderer, 0, 0);
+  if (!s_is_window_resolution) {
+    SDL_RenderSetLogicalSize(sp_renderer, 0, 0);
+    s_is_window_resolution = true;
+  }
 }
 
-void Renderer::renderScene(Matrix& matrix, SimulationTexture& simulation_texture) {
+void Renderer::renderScene(
+  Matrix& matrix,
+  SimulationTexture& simulation_texture,
+  int cursor_x, int cursor_y,
+  int cursor_radius
+) { 
 	// Render the simulation scene, UI, and debug overlays
 	clear();
+
+  setSimulationResolution();
 
 	// Draw low-res game world
 	simulation_texture.updateTexture(matrix);
 	drawTexture(simulation_texture.getTexture());
+  
+  drawBrushOutline(cursor_x, cursor_y, cursor_radius);
 
-	// // Switch to full-res and render overlays
-	setWindowResolution();
-	// mp_ElementUI->render();
-	DebugUI::render();
+	// Switch to full-res and render overlays
+	setWindowResolution();  
+
+	SystemStatsDisplay::render();
 
 	drawQueuedRects();
-
-	setSimulationResolution(); // Restore for next frame
 }
 
 void Renderer::drawTexture(SDL_Texture* texture) {
@@ -121,14 +157,14 @@ void Renderer::drawTexture(SDL_Texture* texture) {
 // Drawing Utilities
 //------------------------------------------------------------------------------
 
-void Renderer::drawBrushOutline(int x, int y, int radius, bool mouseOverUI) {
+void Renderer::drawBrushOutline(int x, int y, uint8_t radius) {
 	// Draw a circular outline for the brush if not over UI and within bounds
-	if (mouseOverUI || x < 0 || x >= Simulation::WIDTH || y < 0 || y >= Simulation::HEIGHT) return;
+	if (x < 0 || x >= Simulation::WIDTH || y < 0 || y >= Simulation::HEIGHT) return;
 	SDL_SetRenderDrawColor(sp_renderer, 255, 255, 255, 255);
 	drawCircleOutline(x, y, radius);
 }
 
-void Renderer::drawCircleOutline(int centerX, int centerY, int radius) {
+void Renderer::drawCircleOutline(int centerX, int centerY, uint8_t radius) {
 	// Draw a circle outline using the midpoint circle algorithm
 	const int diameter = radius * 2;
 	int x = radius - 1, y = 0;
@@ -215,14 +251,6 @@ SDL_Renderer* Renderer::getRenderer() {
 	return sp_renderer;
 }
 
-// ElementUI* Renderer::getElementUI() {
-// 	return mp_ElementUI;
-// }
-
-// DebugUI* Renderer::getDebugUI() {
-// 	return mp_DebugUI;
-// }
-
 //------------------------------------------------------------------------------
 // Cleanup
 //------------------------------------------------------------------------------
@@ -231,15 +259,6 @@ void Renderer::cleanup() {
 	// Destroy SDL resources and UI overlays
 	if (sp_renderer) SDL_DestroyRenderer(sp_renderer);
 	if (sp_window) SDL_DestroyWindow(sp_window);
-	// if (mp_ElementUI) {
-	// 	mp_ElementUI->cleanup();
-	// 	delete mp_ElementUI;
-	// 	mp_ElementUI = nullptr;
-	// }
-	// if (mp_DebugUI) {
-	// 	delete mp_DebugUI;
-	// 	mp_DebugUI = nullptr;
-	// }
 	IMG_Quit();
   TTF_Quit();
 	SDL_Quit();

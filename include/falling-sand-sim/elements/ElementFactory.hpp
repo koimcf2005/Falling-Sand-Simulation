@@ -1,9 +1,30 @@
+// ElementFactory.hpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Provides a factory for registering, creating, and managing element types
+// in the simulation. Handles element metadata, textures, and entity creation.
+
 #ifndef ELEMENT_FACTORY_HPP
 #define ELEMENT_FACTORY_HPP
 
-#include "src/elements/ElementTypes.hpp"
-#include "src/components/Components.hpp"
-#include "src/components/ComponentManager.hpp"
+#include "falling-sand-sim/components/Components.hpp"
+#include "falling-sand-sim/components/EnTTManager.hpp"
+#include "falling-sand-sim/elements/ElementTypes.hpp"
 
 #include <array>
 #include <random>

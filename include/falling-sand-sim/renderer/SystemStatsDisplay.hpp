@@ -1,6 +1,26 @@
-#ifndef DEBUG_UI_HPP
-#define DEBUG_UI_HPP
+// SystemStatsDisplay.hpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Declares the SystemStatsDisplay class for rendering FPS, TPS, memory, and
+// entity/component stats overlay in the simulation.
 
+#ifndef SYSTEM_STATS_DISPLAY
+#define SYSTEM_STATS_DISPLAY
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -11,7 +31,7 @@
  * 
  * Handles text rendering and updating debug stats.
  */
-class DebugUI {
+class SystemStatsDisplay {
 public:
 	/**
 	 * @brief Initialize the debug UI (load font).
@@ -33,6 +53,9 @@ public:
 	 */
 	static void render();
 
+  static void incrementFrameCount();
+  static void incrementTickCount();
+
 	// UI layout constants
 	static constexpr int FONT_SIZE = 16;      ///< Font size for debug text
 	static constexpr int TEXT_POS_X = 10;     ///< X position for debug text
@@ -52,6 +75,9 @@ private:
 	static int s_frame_count;         		///< Frame count since last FPS update
 	static float s_fps;            			  ///< Calculated FPS
 	static bool s_is_active;
+  static Uint32 s_tick_last_time;
+  static int s_tick_count;
+  static float s_tick_rate;
 };
 
-#endif // DEBUG_UI_HPP
+#endif // SYSTEM_STATS_DISPLAY

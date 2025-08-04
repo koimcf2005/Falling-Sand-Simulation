@@ -1,9 +1,30 @@
+// Renderer.hpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Declares the Renderer class for SDL window, rendering, and drawing
+// utilities for the Falling Sand Simulation.
+
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
-#include "src/matrix/Matrix.hpp"
-#include "src/core/Globals.hpp"
-#include "src/renderer/SimulationTexture.hpp"
+#include "falling-sand-sim/world/Matrix.hpp"
+#include "falling-sand-sim/core/Globals.hpp"
+#include "falling-sand-sim/renderer/DisplayTexture.hpp"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -26,7 +47,7 @@ public:
 	static bool initialize(const char* title);
 
 	/**
-	 * @brief Clear the screen to black.#include "src/renderer/SimulationTexture.hpp"
+	 * @brief Clear the screen to black.#include "falling-sand-sim/renderer/SimulationTexture.hpp"
 
 	 */
 	static void clear();
@@ -59,7 +80,7 @@ public:
 	 * @param radius Brush radius
 	 * @param mouseOverUI If true, do not draw the outline
 	 */
-	static void drawBrushOutline(int mouseX, int mouseY, int radius, bool mouseOverUI);
+	static void drawBrushOutline(int mouseX, int mouseY, uint8_t radius);
 
 	/**
 	 * @brief Draw a rectangle in screen (window) space with a given thickness.
@@ -76,7 +97,12 @@ public:
 	 * @param matrix CellularMatrix to render
 	 * @param showDebug Whether to show the debug overlay
 	 */
-	static void renderScene(Matrix& matrix, SimulationTexture& simulation_texture);
+	static void renderScene(
+    Matrix& matrix,
+    SimulationTexture& simulation_texture,
+    int cursor_x, int cursor_y,
+    int cursor_radius
+  );
 
 	/**
 	 * @brief Get the underlying SDL_Renderer pointer.
@@ -116,14 +142,11 @@ private:
 	 * @param centerY Center Y
 	 * @param radius Radius
 	 */
-	static void drawCircleOutline(int centerX, int centerY, int radius);
+	static void drawCircleOutline(int centerX, int centerY, uint8_t radius);
 
 	// SDL window and renderer
 	static SDL_Window* sp_window;
 	static SDL_Renderer* sp_renderer;
-
-	// Utility font pointer (not used directly in Renderer, but may be used by overlays)
-	static TTF_Font* sp_font;
 
 	// Struct for queued screen-space rectangles
 	struct ScreenRect {
@@ -131,6 +154,8 @@ private:
 		SDL_Color color;
 	};
 	static std::vector<ScreenRect> s_queued_rects;
+
+  static bool s_is_window_resolution;
 };
 
 #endif // RENDERER_HPP

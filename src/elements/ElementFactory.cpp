@@ -1,7 +1,30 @@
-#include "src/elements/ElementFactory.hpp"
-#include "src/elements/types/Empty/EmptyElement.hpp"
-#include "src/elements/types/Sand/SandElement.hpp"
-#include "src/matrix/Matrix.hpp"
+// ElementFactory.cpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Implements the ElementFactory for registering, creating, and managing
+// element types, metadata, and textures.
+
+#include "falling-sand-sim/elements/ElementFactory.hpp"
+
+#include "falling-sand-sim/components/EnTTManager.hpp"
+#include "falling-sand-sim/elements/types/EmptyElement.hpp"
+#include "falling-sand-sim/elements/types/SandElement.hpp"
+#include "falling-sand-sim/world/Matrix.hpp"
 
 #include <SDL2/SDL_image.h>
 #include <iostream>
@@ -45,9 +68,9 @@ void ElementFactory::updateElementByType(ElementType type, Matrix& matrix, entt:
 
 entt::entity ElementFactory::createElementByType(const ElementType type,
 																									 const int x, const int y) {
-	entt::entity newEntity = ComponentManager::createEntity();
+	entt::entity newEntity = EnTTManager::createEntity();
 	SDL_Color color = getElementColor(type, x, y);
-	ComponentManager::addComponent<Element>(
+	EnTTManager::addComponent<Element>(
 		newEntity,
 		Element{
 			type,

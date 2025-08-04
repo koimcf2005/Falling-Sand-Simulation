@@ -1,4 +1,4 @@
-// ElementUtilities.cpp
+// Globals.hpp
 // Copyright (C) 2025 Koi McFarland
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,29 @@
 //
 // Author: koimcf168@gmail.com
 //
-// Implements utility functions for element interactions, such as checking if
-// elements can be swapped in the simulation matrix.
+// Defines global constants for window, simulation, and chunk dimensions and
+// timing. Used throughout the simulation for consistent configuration.
 
-#include "falling-sand-sim/elements/ElementUtilities.hpp"
+#ifndef GLOBALS_HPP
+#define GLOBALS_HPP
 
-#include "falling-sand-sim/elements/ElementTypes.hpp"
-#include "falling-sand-sim/world/Matrix.hpp"
+namespace Window {
+	const static int WIDTH = 512; 
+	const static int HEIGHT = 512;
+};
 
-bool ElementUtilities::canSwapWithElement(const Matrix& matrix, const int x, const int y) {
-	if (!matrix.isInBounds(x, y)) return false;
-	if (matrix.getElement(x, y).type != EMPTY) return false;
-	return true;
-}
+namespace Simulation {
+	const static int WIDTH = 512/4;
+	const static int HEIGHT = 512/4;
+  
+  const static float PHYSICS_HZ = 60.0f;
+  const static float MS_PER_UPDATE = 1000.0f / Simulation::PHYSICS_HZ;
+};
+
+namespace Chunks {
+	const static int CHUNK_SIZE = 64;
+	const static int CHUNKS_X = (Simulation::WIDTH + CHUNK_SIZE - 1) / CHUNK_SIZE;
+	const static int CHUNKS_Y = (Simulation::HEIGHT + CHUNK_SIZE - 1) / CHUNK_SIZE;
+};
+
+#endif // GLOBALS_HPP

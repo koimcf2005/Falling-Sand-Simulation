@@ -1,4 +1,4 @@
-// ElementUtilities.cpp
+// ElementUtilities.hpp
 // Copyright (C) 2025 Koi McFarland
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,17 @@
 //
 // Author: koimcf168@gmail.com
 //
-// Implements utility functions for element interactions, such as checking if
+// Declares utility functions for element interactions, such as checking if
 // elements can be swapped in the simulation matrix.
 
-#include "falling-sand-sim/elements/ElementUtilities.hpp"
+#ifndef ELEMENT_UTILITIES_HPP
+#define ELEMENT_UTILITIES_HPP
 
-#include "falling-sand-sim/elements/ElementTypes.hpp"
-#include "falling-sand-sim/world/Matrix.hpp"
+class Matrix;
 
-bool ElementUtilities::canSwapWithElement(const Matrix& matrix, const int x, const int y) {
-	if (!matrix.isInBounds(x, y)) return false;
-	if (matrix.getElement(x, y).type != EMPTY) return false;
-	return true;
+namespace ElementUtilities {
+	bool canSwapWithElement(const Matrix& matrix, const int x, const int y);
 }
+
+
+#endif // ELEMENT_UTILITIES_HPP

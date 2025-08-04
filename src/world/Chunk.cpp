@@ -1,6 +1,27 @@
-#include "src/matrix/Chunk.hpp"
+// Chunk.cpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Implements the Chunk class for managing simulation chunk boundaries and
+// update rectangles.
 
-#include "src/core/Globals.hpp"
+#include "falling-sand-sim/world/Chunk.hpp"
+
+#include "falling-sand-sim/core/Globals.hpp"
 
 #include <algorithm> 
 
@@ -55,6 +76,13 @@ void Chunk::addNewPosition(const int x, const int y) {
 	m_next_update_rect.y = top;
 	m_next_update_rect.w = right - left + 1;
 	m_next_update_rect.h = bottom - top + 1;
+}
+
+void Chunk::updateWholeChunk() {
+	m_next_update_rect.x = getLeftX();
+	m_next_update_rect.w = Chunks::CHUNK_SIZE;
+	m_next_update_rect.y = getTopY();
+	m_next_update_rect.h = Chunks::CHUNK_SIZE;
 }
 
 void Chunk::commitUpdateRect() {

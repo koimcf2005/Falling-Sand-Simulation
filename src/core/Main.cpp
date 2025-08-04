@@ -1,10 +1,33 @@
-#include "src/core/Globals.hpp"
-#include "src/renderer/Renderer.hpp"
-#include "src/renderer/ui/DebugUI.hpp"
-#include "src/elements/ElementFactory.hpp"
-#include "src/elements/ElementTypes.hpp"
-#include "src/matrix/Matrix.hpp"
-#include "src/renderer/SimulationTexture.hpp"
+// Main.cpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Implements the main entry point, game loop, and input handling for the
+// Falling Sand Simulation.
+
+#include "falling-sand-sim/core/Globals.hpp"
+
+#include "falling-sand-sim/components/EnTTManager.hpp"
+#include "falling-sand-sim/elements/ElementFactory.hpp"
+#include "falling-sand-sim/elements/ElementTypes.hpp"
+#include "falling-sand-sim/renderer/Renderer.hpp"
+#include "falling-sand-sim/renderer/DisplayTexture.hpp"
+#include "falling-sand-sim/renderer/SystemStatsDisplay.hpp"
+#include "falling-sand-sim/world/Matrix.hpp"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -12,12 +35,93 @@
 #include <entt/entt.hpp>
 #include <iostream>
 
-//-------------------------------------------
-// Function Declarations
-//-------------------------------------------
-void handleEvents(SDL_Event& event, bool& running, bool& left_mouse_down, bool& right_mouse_down, bool& middle_mouse_down, bool& show_stats, bool& debug_mode, SimulationTexture* simulation_texture, Matrix* matrix, int& area_size);
-void handleMouseInput(Matrix* matrix, int simulation_mouse_x, int simulation_mouse_y, int area_size, bool& left_mouse_down, bool& right_mouse_down, bool& middle_mouse_down, bool debug_mode);
-void printElementDebugInfo(Matrix* matrix, int simulation_mouse_x, int simulation_mouse_y);
+void printElementDebugInfo(
+  Matrix *matrix,
+  int simulation_mouse_x,
+  int simulation_mouse_y
+);
+
+struct Input {
+  const Uint8* sdl_state;
+  std::vector<Uint8> current_state;
+  std::vector<Uint8> last_state;
+  int num_keys;
+
+  // Mouse state
+  Uint32 mouse_buttons;
+  Uint32 last_mouse_buttons;
+  int mouse_x, mouse_y;
+  int last_mouse_x, last_mouse_y;
+  int mouse_wheel_y, last_mouse_wheel_y;
+
+  Input() {
+    sdl_state = SDL_GetKeyboardState(&num_keys);
+    current_state.resize(num_keys);
+    last_state.resize(num_keys);
+    memcpy(current_state.data(), sdl_state, num_keys);
+    memcpy(last_state.data(), sdl_state, num_keys);
+
+    mouse_buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
+    last_mouse_buttons = mouse_buttons;
+    last_mouse_x = mouse_x;
+    last_mouse_y = mouse_y;
+    mouse_wheel_y = 0;
+    last_mouse_wheel_y = 0;
+  }
+
+  void updateState() {
+    last_state = current_state;
+    memcpy(current_state.data(), SDL_GetKeyboardState(NULL), num_keys);
+
+    last_mouse_buttons = mouse_buttons;
+    last_mouse_x = mouse_x;
+    last_mouse_y = mouse_y;
+    last_mouse_wheel_y = mouse_wheel_y;
+
+    mouse_buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
+    mouse_wheel_y = 0; // Reset, will be set by handleSDLEvent
+  }
+
+  // Call this from your SDL event loop for SDL_MOUSEWHEEL events
+  void handleSDLEvent(const SDL_Event& event) {
+    if (event.type == SDL_MOUSEWHEEL) {
+      mouse_wheel_y += event.wheel.y;
+    }
+  }
+
+  // Keyboard
+  bool isKeyPressed(SDL_Scancode sc) const {
+    return current_state[sc];
+  }
+  bool wasKeyPressed(SDL_Scancode sc) const {
+    return last_state[sc];
+  }
+  bool justPressed(SDL_Scancode sc) const {
+    return current_state[sc] && !last_state[sc];
+  }
+  bool justReleased(SDL_Scancode sc) const {
+    return !current_state[sc] && last_state[sc];
+  }
+
+  // Mouse
+  bool isMouseButtonPressed(Uint8 button) const {
+    return mouse_buttons & SDL_BUTTON(button);
+  }
+  bool wasMouseButtonPressed(Uint8 button) const {
+    return last_mouse_buttons & SDL_BUTTON(button);
+  }
+  bool mouseButtonJustPressed(Uint8 button) const {
+    return (mouse_buttons & SDL_BUTTON(button)) && !(last_mouse_buttons & SDL_BUTTON(button));
+  }
+  bool mouseButtonJustReleased(Uint8 button) const {
+    return !(mouse_buttons & SDL_BUTTON(button)) && (last_mouse_buttons & SDL_BUTTON(button));
+  }
+  int getMouseX() const { return mouse_x; }
+  int getMouseY() const { return mouse_y; }
+  int getMouseDeltaX() const { return mouse_x - last_mouse_x; }
+  int getMouseDeltaY() const { return mouse_y - last_mouse_y; }
+  int getMouseWheelY() const { return mouse_wheel_y; }
+};
 
 //-------------------------------------------
 // Main Function
@@ -25,66 +129,129 @@ void printElementDebugInfo(Matrix* matrix, int simulation_mouse_x, int simulatio
 int main() {
   //-------------------------------------------
   // Initialize Game
-  //-------------------------------------------  
-	if (!Renderer::initialize("Falling Sand Simulation")) {
+  //-------------------------------------------
+  if (!Renderer::initialize("Falling Sand Simulation")) {
     std::cerr << "Renderer init failed\n";
-		return -1;
-	}
-	Renderer::setSimulationResolution();
-  
+    return -1;
+  }
+
+  Renderer::setSimulationResolution();
+
   ElementFactory::initialize();
 
-  Matrix* matrix = new Matrix();
-  SimulationTexture* simulation_texture = new SimulationTexture();
+  Matrix *matrix = new Matrix();
 
+  SimulationTexture *simulation_texture = new SimulationTexture();
   simulation_texture->initializeTexture(Renderer::getRenderer());
 
   //-------------------------------------------
   // Simulation State Variables
   //-------------------------------------------
-  int area_size = 3;
+  Input input;
+  SDL_Event event;
   bool running = true;
-  bool left_mouse_down = false, right_mouse_down = false, middle_mouse_down = false;
+
+  uint8_t brush_size = 3;
+  int simulation_mouse_x;
+  int simulation_mouse_y;
+
   bool show_stats = false;
   bool debug_mode = false;
-  SDL_Event event;
-  Uint32 current_time = SDL_GetTicks(), previous_time = current_time;
+  
   float lag = 0;
 
-	//-------------------------------------------
-	// Main Loop
-	//-------------------------------------------
+  #ifdef DEBUG_MODE
+    show_stats = true;
+    debug_mode = true;
+    simulation_texture->toggleShowChunks();
+    matrix->toggleDebugMode();
+  #endif
+
+  //-------------------------------------------
+  // Main Loop
+  //-------------------------------------------
   while (running) {
-		// Fixed timestep time tracking
-		current_time = SDL_GetTicks();
-		float elapsed = current_time - previous_time;
-		previous_time = current_time;
-		lag += elapsed;
+    Uint32 frame_start = SDL_GetTicks();
 
-    Renderer::setWindowResolution();
-    DebugUI::update(current_time, show_stats);
+    // Accumulate lag based on elapsed time
+    static Uint32 prev_ticks = frame_start;
+    Uint32 now = SDL_GetTicks();
+    lag += now - prev_ticks;
+    prev_ticks = now;
 
-    handleEvents(event, running, left_mouse_down, right_mouse_down, middle_mouse_down, show_stats, debug_mode, simulation_texture, matrix, area_size);
+    //-------------------------------------------
+    // Input
+    //-------------------------------------------
+    input.updateState();
 
-		// Get current mouse position in window (screen) coordinates
-		int mouseX, mouseY;
-		SDL_GetMouseState(&mouseX, &mouseY);
-
-		// For simulation/brush, still use simulation coordinates
-		int simulation_mouse_x = mouseX * Simulation::WIDTH / Window::WIDTH;
-		int simulation_mouse_y = mouseY * Simulation::HEIGHT / Window::HEIGHT;
-
-    handleMouseInput(matrix, simulation_mouse_x, simulation_mouse_y, area_size, left_mouse_down, right_mouse_down, middle_mouse_down, debug_mode);
-
-    if (!debug_mode) {
-      while (lag >= g_MS_PER_UPDATE) {
-        matrix->update();
-        lag -= g_MS_PER_UPDATE;
-      }
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) running = false;
+      input.handleSDLEvent(event);
     }
 
-    Renderer::renderScene(*matrix, *simulation_texture);
-    Renderer::present();
+    if (input.justPressed(SDL_SCANCODE_F1)) {
+      show_stats = !show_stats;
+    }
+    if (input.justPressed(SDL_SCANCODE_F2)) {
+      simulation_texture->toggleShowChunks();
+    }
+    if (input.justPressed(SDL_SCANCODE_F3)) {
+      debug_mode = !debug_mode;
+      matrix->toggleDebugMode();
+    }
+
+    // For simulation/brush, still use simulation coordinates
+    simulation_mouse_x = input.mouse_x * Simulation::WIDTH / Window::WIDTH;
+    simulation_mouse_y = input.mouse_y * Simulation::HEIGHT / Window::HEIGHT;   
+
+    if (input.getMouseWheelY() > 0) {
+      brush_size = std::min(brush_size + 1, 50);
+    }
+    else if (input.getMouseWheelY() < 0) {
+      brush_size = std::max(brush_size - 1, 1);
+    }   
+      
+    if (input.isMouseButtonPressed(SDL_BUTTON_LEFT)) {
+      matrix->placeElementsInArea(SAND, simulation_mouse_x, simulation_mouse_y, brush_size);
+    }
+    if (input.isMouseButtonPressed(SDL_BUTTON_RIGHT)) {
+      matrix->placeElementsInArea(EMPTY, simulation_mouse_x, simulation_mouse_y, brush_size);
+    }
+    if (input.mouseButtonJustPressed(SDL_BUTTON_MIDDLE)) {
+      printElementDebugInfo(matrix, simulation_mouse_x, simulation_mouse_y);
+    }
+
+    //-------------------------------------------
+    // Update
+    //-------------------------------------------
+    while (lag >= Simulation::MS_PER_UPDATE) {
+      if (debug_mode) {
+        if (input.isKeyPressed(SDL_SCANCODE_H)) {
+          matrix->updateCellByCell();
+        }
+        else if (input.isKeyPressed(SDL_SCANCODE_J)) {
+          matrix->updateCellByCell(Simulation::WIDTH);
+        }
+        else if (input.isKeyPressed(SDL_SCANCODE_K)) {
+          matrix->updateCellByCell(Simulation::WIDTH * Simulation::HEIGHT);
+        }
+      }
+      if (!debug_mode) matrix->update();
+      lag -= Simulation::MS_PER_UPDATE;
+
+      // Increment tick count for stats
+      SystemStatsDisplay::incrementTickCount();
+
+      //-------------------------------------------
+      // Render
+      //-------------------------------------------
+      Renderer::renderScene(*matrix, *simulation_texture, simulation_mouse_x, simulation_mouse_y, brush_size);
+      Renderer::present();
+    }
+    
+    // Increment frame count for stats
+    SystemStatsDisplay::incrementFrameCount();
+    SystemStatsDisplay::update(frame_start, show_stats);
   }
 
   ElementFactory::cleanup();
@@ -93,97 +260,35 @@ int main() {
   std::exit(0);
 }
 
-//-------------------------------------------
-// Function Definitions
-//-------------------------------------------
-
-/**
- * @brief Handles SDL events such as mouse and keyboard input.
- */
-void handleEvents(SDL_Event& event, bool& running, bool& left_mouse_down, bool& right_mouse_down, bool& middle_mouse_down, bool& show_stats, bool& debug_mode, SimulationTexture* simulation_texture, Matrix* matrix, int& area_size) {
-  while (SDL_PollEvent(&event)) {
-    if (event.type == SDL_QUIT) {
-      running = false;
-    }
-    else if (event.type == SDL_MOUSEBUTTONDOWN) {
-      if (event.button.button == SDL_BUTTON_LEFT) left_mouse_down = true;
-      if (event.button.button == SDL_BUTTON_RIGHT) right_mouse_down = true;
-      if (event.button.button == SDL_BUTTON_MIDDLE) middle_mouse_down = true;
-    }
-    else if (event.type == SDL_MOUSEBUTTONUP) {
-      if (event.button.button == SDL_BUTTON_LEFT) left_mouse_down = false;
-      if (event.button.button == SDL_BUTTON_RIGHT) right_mouse_down = false;
-      if (event.button.button == SDL_BUTTON_MIDDLE) middle_mouse_down = false;
-    }
-    else if (event.type == SDL_KEYDOWN) {
-      switch (event.key.keysym.sym) {
-        case SDLK_F1: show_stats = !show_stats; break;
-        case SDLK_F2: simulation_texture->toggleShowChunks(); break;
-        case SDLK_F3: 
-          debug_mode = !debug_mode;
-          matrix->toggleDebugMode();
-          break;
-        case SDLK_1: 
-          if (debug_mode) { matrix->updateCellByCell(); } 
-          break;
-        case SDLK_2: 
-          if (debug_mode) { matrix->updateCellByCell(Simulation::WIDTH); } 
-          break;
-        case SDLK_3: 
-          if (debug_mode) { matrix->updateCellByCell(Simulation::WIDTH * Simulation::HEIGHT); } 
-          break;
-      }
-    }
-    else if (event.type == SDL_MOUSEWHEEL) {
-      if (event.wheel.y > 0) area_size = std::min(area_size + 1, 50);
-      else if (event.wheel.y < 0) area_size = std::max(area_size - 1, 1);
-    }
-  }
-}
-
-/**
- * @brief Handles mouse input for placing elements and debugging.
- */
-void handleMouseInput(Matrix* matrix, int simulation_mouse_x, int simulation_mouse_y, int area_size, bool& left_mouse_down, bool& right_mouse_down, bool& middle_mouse_down, bool debug_mode) {
-  if (left_mouse_down) {
-    matrix->placeElementsInArea(SAND, simulation_mouse_x, simulation_mouse_y, area_size);
-  }
-  if (right_mouse_down) {
-    matrix->placeElementsInArea(EMPTY, simulation_mouse_x, simulation_mouse_y, area_size);
-  }
-  if (middle_mouse_down && debug_mode) {
-    printElementDebugInfo(matrix, simulation_mouse_x, simulation_mouse_y);
-    middle_mouse_down = false;
-  }
-}
-
 /**
  * @brief Prints debug information about an element at the given coordinates.
  */
-void printElementDebugInfo(Matrix* matrix, int simulation_mouse_x, int simulation_mouse_y) {
+void printElementDebugInfo(Matrix *matrix, int simulation_mouse_x, int simulation_mouse_y)
+{
   entt::entity entity = matrix->getEntity(simulation_mouse_x, simulation_mouse_y);
-  const Element& element = ComponentManager::getComponent<Element>(entity);
-  const Velocity* velocity = ComponentManager::getComponentIfExists<Velocity>(entity);
-  const MovementState* movement_state = ComponentManager::getComponentIfExists<MovementState>(entity);
-  const Health* health = ComponentManager::getComponentIfExists<Health>(entity);
-  const Temperature* temperature = ComponentManager::getComponentIfExists<Temperature>(entity);
+  const Element &element = EnTTManager::getComponent<Element>(entity);
+  const Velocity *velocity = EnTTManager::getComponentIfExists<Velocity>(entity);
+  const MovementState *movement_state = EnTTManager::getComponentIfExists<MovementState>(entity);
+  const Health *health = EnTTManager::getComponentIfExists<Health>(entity);
+  const Temperature *temperature = EnTTManager::getComponentIfExists<Temperature>(entity);
 
-  std::cout << "Element: " << ElementFactory::getElementName(element.type) 
+  std::cout << "Element: " << ElementFactory::getElementName(element.type)
             << " (" << simulation_mouse_x << ", " << simulation_mouse_y << "):\n"
             << "   Step: " << element.step << "\n"
             << "   Color: (" << static_cast<int>(element.color.r) << ", "
-                          << static_cast<int>(element.color.g) << ", "
-                          << static_cast<int>(element.color.b) << ", "
-                          << static_cast<int>(element.color.a) << ")\n"
-            << "   Velocity: (" 
-            << (velocity ? std::to_string(velocity->vx) + ", " + std::to_string(velocity->vy) : "none") 
+            << static_cast<int>(element.color.g) << ", "
+            << static_cast<int>(element.color.b) << ", "
+            << static_cast<int>(element.color.a) << ")\n"
+            << "   Velocity: ("
+            << (velocity ? std::to_string(velocity->vx) + ", " + std::to_string(velocity->vy) : "none")
             << ")\n"
-            << "   Accumulated Velocity: (" 
-            << (velocity ? std::to_string(velocity->ax) + ", " + std::to_string(velocity->ay) : "none") 
+            << "   Accumulated Velocity: ("
+            << (velocity ? std::to_string(velocity->ax) + ", " + std::to_string(velocity->ay) : "none")
             << ")\n"
             << "   Is Moving: " << (movement_state ? movement_state->isMoving() : 0) << "\n"
             << "   Moved This Frame: " << (movement_state ? movement_state->movedThisFrame() : 0) << "\n"
-            << "   Health: " << (health ? std::to_string(health->health) + "/" + std::to_string(health->max) : "none") << "\n"
-            << "   Temperature: " << (temperature ? std::to_string(temperature->temperature) + " (Threshold: " + std::to_string(temperature->threshold) + ")" : "none") 
+            << "   Health: " << (health ? std::to_string(health->health) + "/" + std::to_string(health->max) : "none")
+            << "\n   Temperature: " << (temperature ? std::to_string(temperature->temperature)
+            +  " (Threshold: " + std::to_string(temperature->threshold) + ")" : "none")
             << "\n";
 }

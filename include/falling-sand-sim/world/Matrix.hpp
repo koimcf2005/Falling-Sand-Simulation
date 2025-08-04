@@ -1,11 +1,32 @@
+// Matrix.hpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// Declares the Matrix class, which manages the simulation grid, element
+// placement, updates, and chunk management.
+
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
-#include "src/core/Globals.hpp"
-#include "src/matrix/Chunk.hpp"
-#include "src/elements/ElementTypes.hpp"
-#include "src/components/Components.hpp"
-#include "src/components/ComponentManager.hpp"
+#include "falling-sand-sim/core/Globals.hpp"
+#include "falling-sand-sim/world/Chunk.hpp"
+#include "falling-sand-sim/elements/ElementTypes.hpp"
+#include "falling-sand-sim/components/Components.hpp"
+#include "falling-sand-sim/components/EnTTManager.hpp"
 
 #include <SDL2/SDL.h>
 #include <entt/entt.hpp>
@@ -24,7 +45,7 @@ public:
 	// Main update loop
 	//-------------------------------------------
 	void update();
-	void updateCellByCell(const int step_count = 1);
+	void updateCellByCell(int step_count = 1);
 
 	//-------------------------------------------
 	// Element Management 
@@ -79,7 +100,7 @@ public:
 		if (!isInBounds(x, y)) {
 			return false;
 		}
-		return ComponentManager::hasComponent<Component>(getEntity(x, y));
+		return EnTTManager::hasComponent<Component>(getEntity(x, y));
 	}
 
 	template<typename Component>
@@ -87,7 +108,7 @@ public:
 		if (!isInBounds(x, y)) {
 			throw std::out_of_range("Matrix::getEntityComponent: coordinates out of bounds");
 		}
-		return ComponentManager::getComponent<Component>(m_matrix[x + y * Simulation::WIDTH]);
+		return EnTTManager::getComponent<Component>(m_matrix[x + y * Simulation::WIDTH]);
 	}
 
 	template<typename Component>
@@ -95,7 +116,7 @@ public:
 		if (!isInBounds(x, y)) {
 			throw std::out_of_range("Matrix::getEntityComponent: coordinates out of bounds");
 		}
-		return ComponentManager::getComponent<Component>(m_matrix[x + y * Simulation::WIDTH]);
+		return EnTTManager::getComponent<Component>(m_matrix[x + y * Simulation::WIDTH]);
 	}
 
 private:

@@ -1,11 +1,34 @@
+// Components.hpp
+// Copyright (C) 2025 Koi McFarland
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+// Author: koimcf168@gmail.com
+//
+// This file defines the core ECS (Entity Component System) components used in
+// the Falling Sand Simulation. Components represent data attached to entities,
+// such as movement state, velocity, health, temperature, and element type.
+// These structures are used by systems to implement simulation logic and
+// rendering.
+
 #ifndef COMPONENTS_HPP
 #define COMPONENTS_HPP
 
-#include "src/elements/ElementTypes.hpp"
+#include "falling-sand-sim/elements/ElementTypes.hpp"
 
 #include <SDL2/SDL.h>
 #include <string>
-
 #include <cstdint>
 
 enum MovementFlags : uint8_t {

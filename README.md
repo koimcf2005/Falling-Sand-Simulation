@@ -27,91 +27,63 @@ A cellular automata-based particle simulation built with C++, EnTT, and SDL2. Th
 
 - **Left Mouse Button**: Place selected element  
 - **Right Mouse Button**: Erase (place empty space)  
-- **Mouse Wheel**: Adjust brush size (1-10)  
+- **Mouse Wheel**: Adjust brush size (1-50)  
+
+### Debug Controls
+
+- **Middle Mouse Button**: Print Element Internal Variables
+- **F1**: Show System Stats
+- **F2**: Show Chunk Grid
+- **F3**: Toggle Debug Mode
+- **H**: Step one cell (only in debug mode)
+- **J**: Step one row (only in debug mode)
+- **K**: Step one frame (only in debug mode)
 
 ---
 
 ## Build System
 
-This project uses **CMake** and a **cross-platform Python script (`build.py`)** to manage builds and execution. It supports both Debug and Release builds and works on **Linux**, **macOS**, and **Windows** (with Python and CMake installed).
+This project uses **CMake** to manage builds and execution. It supports both Debug and Release builds and works on **Linux**, **macOS**, and **Windows** (CMake installed).
 
 ### Prerequisites
 
-- Python 3  
 - CMake 3.19+  
 - A C++17 compatible compiler  
 - SDL2, SDL2_image, and SDL2_ttf development libraries
 
 ### Installing SDL2, SDL2_image, and SDL2_ttf
 
-#### On Ubuntu/Debian:
+#### On Ubuntu/Debian
 
 ```bash
 sudo apt update
 sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 ```
 
-#### On macOS (using Homebrew):
+#### On macOS (using Homebrew)
 
 ```bash
 brew install sdl2 sdl2_image sdl2_ttf
 ```
 
-#### On Windows:
+#### On Windows
 
 1. Install [CMake](https://cmake.org/download/) and [Python](https://www.python.org/downloads/)
 2. Use [vcpkg](https://github.com/microsoft/vcpkg) to install SDL2 libraries:
+
    ```bash
    ./vcpkg install sdl2 sdl2-image sdl2-ttf
    ```
+
 3. Pass the toolchain file when configuring:
+
    ```bash
    cmake --preset=debug -DCMAKE_TOOLCHAIN_FILE=path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
    ```
 
 ---
 
-## Python Build Script
-
-If you prefer a fully automated build experience, use the `build.py` script:
-
-### Build Debug Version
-
-```bash
-python build.py build-debug
-```
-
-### Build Release Version
-
-```bash
-python build.py build-release
-```
-
-### Run the Simulation (Debug Build)
-
-```bash
-python build.py run-debug
-```
-
-### Run the Simulation (Release Build)
-
-```bash
-python build.py run-release
-```
-
-### Clean All Build Files
-
-```bash
-python build.py clean
-```
-
----
-
-## Building Without Python
-
-If you don't want to use `build.py`, you can build the project manually using CMake.
-
-### Using CMake Presets (recommended):
+### Building Using CMake Presets (recommended)
 
 ```bash
 # Configure and build debug
@@ -123,7 +95,7 @@ cmake --preset=release
 cmake --build --preset=release
 ```
 
-### Without Presets (classic method):
+### Building Without Presets (classic method)
 
 ```bash
 # Debug build
@@ -151,7 +123,6 @@ This builds the binary to `build/[type]/bin/FallingSandSim`.
 - **SDL2_image** — PNG loading  
 - **SDL2_ttf** — Font rendering  
 - **CMake** — Build configuration  
-- **Python 3** — Cross-platform build management via `build.py`  
 
 ---
 
@@ -161,4 +132,4 @@ This project is licensed under the terms of the [GNU Affero General Public Licen
 
 © 2024 Koi McFarland. You may use, modify, and distribute this software freely under AGPL-3.0, but **commercial use is strictly prohibited unless you also open-source your derivative work under the same license.**
 
-This project uses open source libraries (EnTT and SDL2). See their respective licenses in the `include/` folder.
+This project uses open source libraries (EnTT and SDL2). See their respective licenses in the `include/` folder
