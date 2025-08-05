@@ -27,13 +27,13 @@
       }
     },
     {
-      "name": "testing",
-      "displayName": "Testing Build",
-      "description": "Build for running tests",
+      "name": "valgrind",
+      "displayName": "Profiling Build (Valgrind)",
+      "description": "Build with debug info for Valgrind",
       "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/build/testing",
+      "binaryDir": "${sourceDir}/build/valgrind",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Testing"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     }
   ],
@@ -47,8 +47,8 @@
       "configurePreset": "release"
     },
     {
-      "name": "testing",
-      "configurePreset": "testing"
+      "name": "valgrind",
+      "configurePreset": "valgrind"
     }
   ],
   "testPresets": [
@@ -61,8 +61,8 @@
       "configurePreset": "release"
     },
     {
-      "name": "testing",
-      "configurePreset": "testing"
+      "name": "valgrind",
+      "configurePreset": "valgrind"
     }
   ]
 }

@@ -91,7 +91,7 @@ void SimulationTexture::updateTexture(const Matrix& matrix) {
 
   if (m_show_chunks) {
     for (const auto& chunk : matrix.getChunks()) {
-      Renderer::drawScreenSpaceRect(
+      Renderer::drawRectangle(
         chunk.getLeftX(),
         chunk.getTopY(),
         Chunks::CHUNK_SIZE,
@@ -100,7 +100,7 @@ void SimulationTexture::updateTexture(const Matrix& matrix) {
         {0, 0, 255, 255}
       );
       const SDL_Rect& rect = chunk.getCurrentUpdateRect();
-      Renderer::drawScreenSpaceRect(
+      Renderer::drawRectangle(
         rect.x,
         rect.y,
         rect.w,

@@ -31,6 +31,7 @@
 SDL_Window* Renderer::sp_window = nullptr;
 SDL_Renderer* Renderer::sp_renderer = nullptr;
 std::vector<Renderer::ScreenRect> Renderer::s_queued_rects;
+std::vector<Renderer::QueuedCircle> Renderer::s_queued_brush_outlines;
 bool Renderer::s_is_window_resolution = true;
 
 //------------------------------------------------------------------------------
@@ -39,12 +40,9 @@ bool Renderer::s_is_window_resolution = true;
 bool Renderer::initialize(const char* title) {
 
   //------------------------------------------------------------------------------
-  // SDL2 Initialization
+  // SDL2 Rendering Initialization
   //------------------------------------------------------------------------------
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-			std::cerr << "SDL init failed: " << SDL_GetError() << '\n';
-			return false;
-	}
+
 
 	if (IMG_Init(IMG_INIT_PNG) == 0) {
 			std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
@@ -123,12 +121,7 @@ void Renderer::setWindowResolution() {
   }
 }
 
-void Renderer::renderScene(
-  Matrix& matrix,
-  SimulationTexture& simulation_texture,
-  int cursor_x, int cursor_y,
-  int cursor_radius
-) { 
+void Renderer::renderScene(Matrix& matrix, SimulationTexture& simulation_texture) { 
 	// Render the simulation scene, UI, and debug overlays
 	clear();
 
@@ -138,14 +131,14 @@ void Renderer::renderScene(
 	simulation_texture.updateTexture(matrix);
 	drawTexture(simulation_texture.getTexture());
   
-  drawBrushOutline(cursor_x, cursor_y, cursor_radius);
+  drawQueuedCircles();
 
 	// Switch to full-res and render overlays
 	setWindowResolution();  
 
 	SystemStatsDisplay::render();
-
-	drawQueuedRects();
+  
+	drawQueuedRectangles();
 }
 
 void Renderer::drawTexture(SDL_Texture* texture) {
@@ -157,44 +150,48 @@ void Renderer::drawTexture(SDL_Texture* texture) {
 // Drawing Utilities
 //------------------------------------------------------------------------------
 
-void Renderer::drawBrushOutline(int x, int y, uint8_t radius) {
-	// Draw a circular outline for the brush if not over UI and within bounds
+void Renderer::drawCircle(int x, int y, uint8_t radius, SDL_Color color) {
+	// Queue a circular outline for the brush if not over UI and within bounds
 	if (x < 0 || x >= Simulation::WIDTH || y < 0 || y >= Simulation::HEIGHT) return;
-	SDL_SetRenderDrawColor(sp_renderer, 255, 255, 255, 255);
-	drawCircleOutline(x, y, radius);
+	s_queued_brush_outlines.push_back({x, y, radius, color});
 }
 
-void Renderer::drawCircleOutline(int centerX, int centerY, uint8_t radius) {
-	// Draw a circle outline using the midpoint circle algorithm
-	const int diameter = radius * 2;
-	int x = radius - 1, y = 0;
-	int tx = 1, ty = 1;
-	int err = tx - diameter;
+void Renderer::drawQueuedCircles() {
+	// Draw all queued brush outlines (used for overlays)
+	for (const auto& circle : s_queued_brush_outlines) {
+    SDL_SetRenderDrawColor(sp_renderer, circle.color.r, circle.color.g, circle.color.b, circle.color.a);
+		const int diameter = circle.radius * 2;
+    const int center_x = circle.x;
+    const int center_y = circle.y;
+    int x = circle.radius - 1, y = 0;
+    int tx = 1, ty = 1;
+    int err = tx - diameter;
+    while (x >= y) {
+      SDL_RenderDrawPoint(sp_renderer, center_x + x, center_y - y);
+      SDL_RenderDrawPoint(sp_renderer, center_x + x, center_y + y);
+      SDL_RenderDrawPoint(sp_renderer, center_x - x, center_y - y);
+      SDL_RenderDrawPoint(sp_renderer, center_x - x, center_y + y);
+      SDL_RenderDrawPoint(sp_renderer, center_x + y, center_y - x);
+      SDL_RenderDrawPoint(sp_renderer, center_x + y, center_y + x);
+      SDL_RenderDrawPoint(sp_renderer, center_x - y, center_y - x);
+      SDL_RenderDrawPoint(sp_renderer, center_x - y, center_y + x);
 
-	while (x >= y) {
-		SDL_RenderDrawPoint(sp_renderer, centerX + x, centerY - y);
-		SDL_RenderDrawPoint(sp_renderer, centerX + x, centerY + y);
-		SDL_RenderDrawPoint(sp_renderer, centerX - x, centerY - y);
-		SDL_RenderDrawPoint(sp_renderer, centerX - x, centerY + y);
-		SDL_RenderDrawPoint(sp_renderer, centerX + y, centerY - x);
-		SDL_RenderDrawPoint(sp_renderer, centerX + y, centerY + x);
-		SDL_RenderDrawPoint(sp_renderer, centerX - y, centerY - x);
-		SDL_RenderDrawPoint(sp_renderer, centerX - y, centerY + x);
-
-		if (err <= 0) {
-			y++;
-			err += ty;
-			ty += 2;
-		}
-		if (err > 0) {
-			x--;
-			tx += 2;
-			err += tx - diameter;
-		}
+      if (err <= 0) {
+        y++;
+        err += ty;
+        ty += 2;
+      }
+      if (err > 0) {
+        x--;
+        tx += 2;
+        err += tx - diameter;
+      }
+    }
 	}
+	s_queued_brush_outlines.clear();
 }
 
-void Renderer::drawScreenSpaceRect(int x, int y, int width, int height, int thickness, SDL_Color color) {
+void Renderer::drawRectangle(int x, int y, int width, int height, int thickness, SDL_Color color) {
 	// Queue a rectangle in screen (window) space for drawing
 	auto [winX, winY] = renderToWindowCoords(x, y);
 	auto [winX2, winY2] = renderToWindowCoords(x + width, y + height);
@@ -205,12 +202,10 @@ void Renderer::drawScreenSpaceRect(int x, int y, int width, int height, int thic
 	s_queued_rects.push_back({ winX, winY, screenWidth, screenHeight, thickness, color});
 }
 
-void Renderer::drawQueuedRects() {
+void Renderer::drawQueuedRectangles() {
 	// Draw all queued screen-space rectangles (used for overlays)
-	setWindowResolution();
-	
 	for (const auto& rect : s_queued_rects) {
-		SDL_SetRenderDrawColor(sp_renderer, rect.color.r, rect.color.g, rect.color.b, rect.color.a); // Red outlines
+		SDL_SetRenderDrawColor(sp_renderer, rect.color.r, rect.color.g, rect.color.b, rect.color.a);
 		SDL_Rect top    = { rect.x, rect.y, rect.w, rect.thickness };
 		SDL_Rect bottom = { rect.x, rect.y + rect.h - rect.thickness, rect.w, rect.thickness };
 		SDL_Rect left   = { rect.x, rect.y, rect.thickness, rect.h };
@@ -223,7 +218,6 @@ void Renderer::drawQueuedRects() {
 	}
 
 	s_queued_rects.clear();
-	setSimulationResolution();
 }
 
 //------------------------------------------------------------------------------

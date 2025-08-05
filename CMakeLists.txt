@@ -14,6 +14,9 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
 
+# Find fmt
+find_package(fmt REQUIRED)
+
 # Add source files
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     src/*.cpp
@@ -30,11 +33,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src
 )
 
-# Link SDL2 libraries
+# Link SDL2 and fmt libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${SDL2_LIBRARIES}
     ${SDL2_IMAGE_LIBRARIES}
     ${SDL2_TTF_LIBRARIES}
+    fmt::fmt
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

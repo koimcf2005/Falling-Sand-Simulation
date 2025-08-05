@@ -32,8 +32,10 @@
 #include <iostream>
 
 void Sand::initialize(entt::entity entity) {
-	// EnTTManager::addComponent<Velocity>(entity, Velocity(0, 1.0f));
-	// EnTTManager::addComponent<MovementState>(entity, MovementState(true, false, false));
+	EnTTManager::addComponent<Velocity>(entity, Velocity(0, 1.0f));
+	EnTTManager::addComponent<MovementState>(entity, MovementState(true, false, false));
+  EnTTManager::addComponent<Health>(entity, Health(100));
+  EnTTManager::addComponent<Temperature>(entity, Temperature(500));
 }
 
 void Sand::update(Matrix& matrix, entt::entity entity, const int x, const int y) {

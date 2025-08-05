@@ -80,7 +80,7 @@ public:
 	 * @param radius Brush radius
 	 * @param mouseOverUI If true, do not draw the outline
 	 */
-	static void drawBrushOutline(int mouseX, int mouseY, uint8_t radius);
+	static void drawCircle(int x, int y, uint8_t radius, SDL_Color color = {255, 255, 255, 255});
 
 	/**
 	 * @brief Draw a rectangle in screen (window) space with a given thickness.
@@ -90,19 +90,14 @@ public:
 	 * @param height Height in simulation coordinates
 	 * @param thickness Border thickness in pixels
 	 */
-	static void drawScreenSpaceRect(int x, int y, int width, int height, int thickness, SDL_Color color = {255, 0, 0, 255});
+	static void drawRectangle(int x, int y, int width, int height, int thickness, SDL_Color color = {255, 255, 255, 255});
 
 	/**
 	 * @brief Render the simulation scene, UI, and debug overlays.
 	 * @param matrix CellularMatrix to render
 	 * @param showDebug Whether to show the debug overlay
 	 */
-	static void renderScene(
-    Matrix& matrix,
-    SimulationTexture& simulation_texture,
-    int cursor_x, int cursor_y,
-    int cursor_radius
-  );
+	static void renderScene(Matrix& matrix, SimulationTexture& simulation_texture);
 
 	/**
 	 * @brief Get the underlying SDL_Renderer pointer.
@@ -134,15 +129,12 @@ private:
 	/**
 	 * @brief Draw all queued screen-space rectangles (used for overlays).
 	 */
-	static void drawQueuedRects();
+	static void drawQueuedRectangles();
 
 	/**
-	 * @brief Draw a circle outline using integer coordinates.
-	 * @param centerX Center X
-	 * @param centerY Center Y
-	 * @param radius Radius
+	 * @brief Draw all queued brush outlines (used for overlays).
 	 */
-	static void drawCircleOutline(int centerX, int centerY, uint8_t radius);
+	static void drawQueuedCircles();
 
 	// SDL window and renderer
 	static SDL_Window* sp_window;
@@ -154,6 +146,14 @@ private:
 		SDL_Color color;
 	};
 	static std::vector<ScreenRect> s_queued_rects;
+
+	// Struct for queued brush outlines
+	struct QueuedCircle {
+		int x, y;
+		uint8_t radius;
+		SDL_Color color;
+	};
+	static std::vector<QueuedCircle> s_queued_brush_outlines;
 
   static bool s_is_window_resolution;
 };
