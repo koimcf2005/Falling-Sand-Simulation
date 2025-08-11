@@ -81,22 +81,32 @@ void Matrix::update() {
   for (auto& chunk : m_chunks) {
     chunk.commitUpdateRect();
     if (!m_show_chunks) continue;
+
     auto [chunk_viewport_x, chunk_viewport_y] = Renderer::simulationToViewportCoords(chunk.getLeftX(), chunk.getTopY());
+    auto [chunk_window_x, chunk_window_y] = Renderer::viewportToWindowCoords(chunk_viewport_x, chunk_viewport_y);
+    auto [chunk_window_x2, chunk_window_y2] = Renderer::viewportToWindowCoords(chunk_viewport_x + Chunks::CHUNK_SIZE, chunk_viewport_y + Chunks::CHUNK_SIZE);
+    int window_width = chunk_window_x2 - chunk_window_x;
+    int window_height = chunk_window_y2 - chunk_window_y;
     Renderer::queueRectangleToWindow(
-      chunk_viewport_x,
-      chunk_viewport_y,
-      Chunks::CHUNK_SIZE,
-      Chunks::CHUNK_SIZE,
+      chunk_window_x,
+      chunk_window_y,
+      window_width,
+      window_height,
       1,
       {0, 0, 255, 255}
     );
+
     const SDL_Rect& rect = chunk.getCurrentUpdateRect();
     auto [rect_viewport_x, rect_viewport_y] = Renderer::simulationToViewportCoords(rect.x, rect.y);
+    auto [rect_window_x, rect_window_y] = Renderer::viewportToWindowCoords(rect_viewport_x, rect_viewport_y);
+    auto [rect_window_x2, rect_window_y2] = Renderer::viewportToWindowCoords(rect_viewport_x + rect.w, rect_viewport_y + rect.h);
+    int window_rect_width = rect_window_x2 - rect_window_x;
+    int window_rect_height = rect_window_y2 - rect_window_y;
     Renderer::queueRectangleToWindow(
-      rect_viewport_x,
-      rect_viewport_y,
-      rect.w,
-      rect.h,
+      rect_window_x,
+      rect_window_y,
+      window_rect_width,
+      window_rect_height,
       1,
       {255, 0, 0, 255}
     );
