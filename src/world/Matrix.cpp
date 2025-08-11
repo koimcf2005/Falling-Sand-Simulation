@@ -29,6 +29,7 @@
 
 #include <iostream>
 #include <vector>
+#include <fmt/core.h>
 #include <set>
 
 //-------------------------------------------
@@ -80,36 +81,9 @@ void Matrix::update() {
   // Commit update rects before processing so new placements are processed immediately
   for (auto& chunk : m_chunks) {
     chunk.commitUpdateRect();
+
     if (!m_show_chunks) continue;
-
-    auto [chunk_viewport_x, chunk_viewport_y] = Renderer::simulationToViewportCoords(chunk.getLeftX(), chunk.getTopY());
-    auto [chunk_window_x, chunk_window_y] = Renderer::viewportToWindowCoords(chunk_viewport_x, chunk_viewport_y);
-    auto [chunk_window_x2, chunk_window_y2] = Renderer::viewportToWindowCoords(chunk_viewport_x + Chunks::CHUNK_SIZE, chunk_viewport_y + Chunks::CHUNK_SIZE);
-    int window_width = chunk_window_x2 - chunk_window_x;
-    int window_height = chunk_window_y2 - chunk_window_y;
-    Renderer::queueRectangleToWindow(
-      chunk_window_x,
-      chunk_window_y,
-      window_width,
-      window_height,
-      1,
-      {0, 0, 255, 255}
-    );
-
-    const SDL_Rect& rect = chunk.getCurrentUpdateRect();
-    auto [rect_viewport_x, rect_viewport_y] = Renderer::simulationToViewportCoords(rect.x, rect.y);
-    auto [rect_window_x, rect_window_y] = Renderer::viewportToWindowCoords(rect_viewport_x, rect_viewport_y);
-    auto [rect_window_x2, rect_window_y2] = Renderer::viewportToWindowCoords(rect_viewport_x + rect.w, rect_viewport_y + rect.h);
-    int window_rect_width = rect_window_x2 - rect_window_x;
-    int window_rect_height = rect_window_y2 - rect_window_y;
-    Renderer::queueRectangleToWindow(
-      rect_window_x,
-      rect_window_y,
-      window_rect_width,
-      window_rect_height,
-      1,
-      {255, 0, 0, 255}
-    );
+    renderChunk(chunk);
   }
 
   for (auto chunk_iter = m_chunks.rbegin(); chunk_iter != m_chunks.rend(); ++chunk_iter) {
@@ -136,44 +110,93 @@ void Matrix::update() {
   s_matrix_step = !s_matrix_step;
 }
 
-int Matrix::s_debug_index = -1;
-void Matrix::updateCellByCell(int step_count) {
+int Matrix::s_debug_x = 0, Matrix::s_debug_y = 0;
+void Matrix::updateCellByCell(const int mode) {
   if (!m_debug_mode) return;
 
-  if (step_count < 0) step_count = s_debug_index + 1;
+  for (auto& chunk : m_chunks) renderChunk(chunk);
+  // Static state to persist across calls (could be member variables)
+  static int chunk_idx = m_chunks.size() - 1;
+  static bool rect_initialized = false;
+  static SDL_Rect rect;
 
-  for (int step = 0; step < step_count; ++step) {
-    int x = s_debug_index % Simulation::WIDTH;
-    int y = s_debug_index / Simulation::WIDTH;
-    
-    entt::entity entity = m_matrix[s_debug_index];
+  auto process = [&](const int x, const int y) {
+    entt::entity entity = getEntity(x, y);
     Element& element = EnTTManager::getComponent<Element>(entity);
     if (element.step != s_matrix_step) {
       ElementFactory::updateElementByType(element.type, *this, entity, x, y);
       element.step = s_matrix_step;
     }
+  };
 
-    if (s_matrix_step) --x;
-    else ++x;
+while (chunk_idx >= 0) {
+  Chunk& chunk = m_chunks[chunk_idx];
 
-    if (x >= Simulation::WIDTH) {
-      x = 0;
-      --y;
-    }
-    else if (x < 0) {
-      x = Simulation::WIDTH - 1;
-      --y;
-    }
-
-    s_debug_index = x + y * Simulation::WIDTH;
-
-    if (s_debug_index < 0) {
-      if (s_matrix_step) s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - Simulation::WIDTH;
-      else s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - 1;
-      for (auto& chunk : m_chunks) chunk.commitUpdateRect();
-      s_matrix_step = !s_matrix_step;
-    }
+  if (!rect_initialized) {
+    rect = chunk.getCurrentUpdateRect();
+    s_debug_y = rect.y + rect.h - 1;
+    s_debug_x = s_matrix_step ? rect.x + rect.w - 1 : rect.x;
+    rect_initialized = true;
   }
+
+  if (rect.w > 0 && rect.h > 0) {
+    while (s_debug_y >= rect.y) { // keep scanning vertically
+
+      while (true) { // horizontal scan
+        // Check bounds
+        if (s_matrix_step) { // right-to-left
+          if (s_debug_x >= rect.x) {
+            process(s_debug_x, s_debug_y);
+            --s_debug_x;
+          }
+          else {
+            s_debug_x = rect.x + rect.w - 1;
+            --s_debug_y;
+            break; // next row
+          }
+        }
+        else { // left-to-right
+          if (s_debug_x < rect.x + rect.w) {
+            process(s_debug_x, s_debug_y);
+            ++s_debug_x;
+          }
+          else {
+            s_debug_x = rect.x;
+            --s_debug_y;
+            break; // next row
+          }
+        }
+
+        // MODE CHECKS
+        if (mode == 0) return;  // single cell
+        if (mode == 1 && ((s_matrix_step && s_debug_x < rect.x) || (!s_matrix_step && s_debug_x >= rect.x + rect.w))) {
+          return; // rest of current row done
+        }
+      }
+
+      // MODE 2 — finish current rect
+      if (mode == 2 && s_debug_y < rect.y) return;
+    }
+
+    // finished rect
+    --chunk_idx;
+    rect_initialized = false;
+
+    // MODE 3 — finish all rects
+    if (mode == 3 && chunk_idx < 0) break;
+
+  }
+  else {
+    --chunk_idx;
+    rect_initialized = false;
+  }
+}
+
+  // All chunks done, reset for next frame
+  for (auto& chunk : m_chunks) chunk.commitUpdateRect();
+  s_matrix_step = !s_matrix_step;
+  chunk_idx = m_chunks.size() - 1;
+  rect_initialized = false;
 }
 
 //-------------------------------------------
@@ -301,18 +324,44 @@ void Matrix::updateChunk(const int x, const int y) {
  * @brief Toggles the debug mode for rendering.
  */
 void Matrix::toggleDebugMode() {
-  if (m_debug_mode) {
-    m_debug_mode = false;
-    updateCellByCell(-1);
-    s_debug_index = -1;
-  }
-  else {
-    m_debug_mode = true;
-    s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - 1;
-  }
+  if (m_debug_mode) updateCellByCell(-1);
+  m_debug_mode = !m_debug_mode;
+  s_debug_x = 0;
+  s_debug_y = 0;
 }
 
-void Matrix::toggleShowChunks() { m_show_chunks = ! m_show_chunks; }
+void Matrix::toggleShowChunks() { m_show_chunks = ! m_show_chunks; fmt::print("{}", m_show_chunks); }
+
+void Matrix::renderChunk(Chunk chunk) {
+  auto [chunk_viewport_x, chunk_viewport_y] = Renderer::simulationToViewportCoords(chunk.getLeftX(), chunk.getTopY());
+  auto [chunk_window_x, chunk_window_y] = Renderer::viewportToWindowCoords(chunk_viewport_x, chunk_viewport_y);
+  auto [chunk_window_x2, chunk_window_y2] = Renderer::viewportToWindowCoords(chunk_viewport_x + Chunks::CHUNK_SIZE, chunk_viewport_y + Chunks::CHUNK_SIZE);
+  int window_width = chunk_window_x2 - chunk_window_x;
+  int window_height = chunk_window_y2 - chunk_window_y;
+  Renderer::queueRectangleToWindow(
+    chunk_window_x,
+    chunk_window_y,
+    window_width,
+    window_height,
+    1,
+    {0, 0, 255, 255}
+  );
+
+  const SDL_Rect& rect = chunk.getCurrentUpdateRect();
+  auto [rect_viewport_x, rect_viewport_y] = Renderer::simulationToViewportCoords(rect.x, rect.y);
+  auto [rect_window_x, rect_window_y] = Renderer::viewportToWindowCoords(rect_viewport_x, rect_viewport_y);
+  auto [rect_window_x2, rect_window_y2] = Renderer::viewportToWindowCoords(rect_viewport_x + rect.w, rect_viewport_y + rect.h);
+  int window_rect_width = rect_window_x2 - rect_window_x;
+  int window_rect_height = rect_window_y2 - rect_window_y;
+  Renderer::queueRectangleToWindow(
+    rect_window_x,
+    rect_window_y,
+    window_rect_width,
+    window_rect_height,
+    1,
+    {255, 0, 0, 255}
+  );
+}
 
 //-------------------------------------------
 // Global Static Step
@@ -332,7 +381,7 @@ bool Matrix::getStep() {
 }
 
 int Matrix::getDebugIndex() {
-  return s_debug_index;
+  return s_debug_x + s_debug_y * Simulation::WIDTH;
 }
 
 //-------------------------------------------

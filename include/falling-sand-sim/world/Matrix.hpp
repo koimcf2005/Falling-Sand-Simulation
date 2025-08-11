@@ -45,7 +45,7 @@ public:
 	// Main update loop
 	//-------------------------------------------
 	void update();
-	void updateCellByCell(int step_count = 1);
+	void updateCellByCell(const int mode = 0);
 
 	//-------------------------------------------
 	// Element Management 
@@ -66,6 +66,7 @@ public:
   //-------------------------------------------
 	void toggleDebugMode();
   void toggleShowChunks();
+  void renderChunk(Chunk chunk);
 	
 	//-------------------------------------------
   // Global Static Step
@@ -141,7 +142,8 @@ private:
 	//-------------------------------------------
 	static bool s_matrix_step;
 
-	static int s_debug_index;
+	static int s_debug_x;
+  static int s_debug_y;
 };
 
 

@@ -175,10 +175,10 @@ int main() {
         brush_size = std::max(brush_size - 1, 1);
       }
 
-      if (Input::getMouse("LEFT")) {
+      if (!debug_mode && Input::getMouse("LEFT")) {
         matrix->placeElementsInArea(SAND, simulation_mouse_x, simulation_mouse_y, brush_size);
       }
-      if (Input::getMouse("RIGHT")) {
+      if (!debug_mode && Input::getMouse("RIGHT")) {
         matrix->placeElementsInArea(EMPTY, simulation_mouse_x, simulation_mouse_y, brush_size);
       }
       if (Input::getKeyDown("I")) {
@@ -190,11 +190,14 @@ int main() {
           matrix->updateCellByCell();
         }
         else if (Input::getKeyDown("J") || Input::getKey("J", 10, 1)) {
-          matrix->updateCellByCell(Simulation::WIDTH);
-        }
+          matrix->updateCellByCell(1);
+        } 
         else if (Input::getKeyDown("K") || Input::getKey("K", 10, 1)) {
-          matrix->updateCellByCell(Simulation::WIDTH * Simulation::HEIGHT);
-        }
+          matrix->updateCellByCell(2);
+        } 
+        else if (Input::getKeyDown("L") || Input::getKey("L", 10, 1)) {
+          matrix->updateCellByCell(3);
+        } 
       }
 
       //-------------------------------------------
@@ -206,10 +209,9 @@ int main() {
       // Render
       //-------------------------------------------
       SystemStatsDisplay::incrementTickCount();
-      Renderer::queueCircleToViewport(viewport_mouse_x, viewport_mouse_y, brush_size, {255, 255, 255, 255});
+      if (!debug_mode) Renderer::queueCircleToViewport(viewport_mouse_x, viewport_mouse_y, brush_size, {255, 255, 255, 255});
       Renderer::renderMatrixThroughViewport(*matrix);
       Renderer::present();
-
       //-------------------------------------------
       // End Loop
       //-------------------------------------------     

@@ -83,7 +83,8 @@ void Viewport::updateTexture(const Matrix& matrix) {
       else {
         color = { 255, 255, 255, 255 };
       }  
-      // if (x + y * Simulation::WIDTH == matrix.getDebugIndex()) color = {255, 0, 0, 255};
+      int dir = Matrix::getStep() ? 1 : -1;
+      if (Matrix::getDebugIndex() + dir == x + y * Simulation::WIDTH) color = { 255, 0, 0, 255 };
 
       dst[index] = (color.r << 24) | (color.g << 16) | (color.b << 8) | color.a;
 
