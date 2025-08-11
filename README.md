@@ -1,6 +1,6 @@
 # Falling Sand Simulation
 
-A cellular automata-based particle simulation built with C++, EnTT, and SDL2. This project creates a physics simulation for every pixel on a 512x512 grid using an Entity Component System.
+A cellular automata-based particle simulation built with C++, EnTT, SDL2 and FMT. This project creates a physics simulation for every pixel on a 512x512 grid using an Entity Component System.
 
 ## Features
 
@@ -27,11 +27,15 @@ A cellular automata-based particle simulation built with C++, EnTT, and SDL2. Th
 
 - **Left Mouse Button**: Place selected element  
 - **Right Mouse Button**: Erase (place empty space)  
-- **Mouse Wheel**: Adjust brush size (1-50)  
+- **Mouse Wheel**: Adjust brush size (1-50)
+- **W A S D**: Move the Viewport around
+- **SHIFT + W A S D**: Move the Viewport around quickly
+- **E**: Zoom in
+- **Q** Zoom out
 
 ### Debug Controls
 
-- **Middle Mouse Button**: Print Element Internal Variables
+- **I**: Print Element Internal Variables
 - **F1**: Show System Stats
 - **F2**: Show Chunk Grid
 - **F3**: Toggle Debug Mode
@@ -49,30 +53,30 @@ This project uses **CMake** to manage builds and execution. It supports both Deb
 
 - CMake 3.19+  
 - A C++17 compatible compiler  
-- SDL2, SDL2_image, and SDL2_ttf development libraries
+- FMT, SDL2, SDL2_image, and SDL2_ttf development libraries
 
-### Installing SDL2, SDL2_image, and SDL2_ttf
+### Installing FMT, SDL2, SDL2_image, and SDL2_ttf
 
 #### On Ubuntu/Debian
 
 ```bash
 sudo apt update
-sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
+sudo apt install libfmt-dev libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 ```
 
 #### On macOS (using Homebrew)
 
 ```bash
-brew install sdl2 sdl2_image sdl2_ttf
+brew install fmt sdl2 sdl2_image sdl2_ttf
 ```
 
 #### On Windows
 
-1. Install [CMake](https://cmake.org/download/) and [Python](https://www.python.org/downloads/)
-2. Use [vcpkg](https://github.com/microsoft/vcpkg) to install SDL2 libraries:
+1. Install [CMake](https://cmake.org/download/)
+2. Use [vcpkg](https://github.com/microsoft/vcpkg) to install FMT / SDL2 libraries:
 
    ```bash
-   ./vcpkg install sdl2 sdl2-image sdl2-ttf
+   ./vcpkg install fmt sdl2 sdl2-image sdl2-ttf
    ```
 
 3. Pass the toolchain file when configuring:
@@ -119,6 +123,7 @@ This builds the binary to `build/[type]/bin/FallingSandSim`.
 
 - **C++17** — Modern language features  
 - **EnTT** — ECS (Entity-Component-System) architecture (included in `libs/entt`)
+- **FMT** — Modern formatting library
 - **SDL2** — Rendering, input, windowing  
 - **SDL2_image** — PNG loading  
 - **SDL2_ttf** — Font rendering  
@@ -132,4 +137,4 @@ This project is licensed under the terms of the [GNU Affero General Public Licen
 
 © 2024 Koi McFarland. You may use, modify, and distribute this software freely under AGPL-3.0, but **commercial use is strictly prohibited unless you also open-source your derivative work under the same license.**
 
-This project uses open source libraries (EnTT and SDL2). See their respective licenses in the `include/` folder
+This project uses open source libraries (FMT, EnTT and SDL2). See their respective licenses in the `include/` folder
