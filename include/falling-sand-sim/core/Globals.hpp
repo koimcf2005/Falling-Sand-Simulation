@@ -23,13 +23,13 @@
 #define GLOBALS_HPP
 
 namespace Window {
-	const static int WIDTH = 512; 
-	const static int HEIGHT = 512;
+	const static int WIDTH = 1280; 
+	const static int HEIGHT = 720;
 };
 
 namespace Simulation {
-	const static int WIDTH = 512/4;
-	const static int HEIGHT = 512/4;
+	const static int WIDTH = 512;
+	const static int HEIGHT = 512;
   
   const static float PHYSICS_HZ = 60.0f;
   const static float MS_PER_UPDATE = 1000.0f / Simulation::PHYSICS_HZ;

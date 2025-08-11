@@ -24,7 +24,7 @@
 
 #include "falling-sand-sim/world/Matrix.hpp"
 #include "falling-sand-sim/core/Globals.hpp"
-#include "falling-sand-sim/renderer/DisplayTexture.hpp"
+#include "falling-sand-sim/renderer/Viewport.hpp"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -56,6 +56,16 @@ public:
 	 * @brief Present the rendered frame to the window.
 	 */
 	static void present();
+	/**
+   * 
+	 * @brief Cleanup and destroy all SDL resources and UI overlays.
+	 */
+	static void cleanup();
+
+	/**
+	 * @brief Get the underlying SDL_Renderer pointer.
+	 */
+	static SDL_Renderer* getRenderer();
 
 	/**
 	 * @brief Set SDL logical rendering size to simulation grid size.
@@ -68,94 +78,103 @@ public:
 	static void setWindowResolution();
 
 	/**
-	 * @brief Draw a texture to the renderer.
-	 * @param texture SDL_Texture to draw
+   * @brief Sets the SDL logical rendering size to the giveb viewport size.
 	 */
-	static void drawTexture(SDL_Texture* texture);
-
-	/**
-	 * @brief Draw a circular outline for the brush at the given position.
-	 * @param mouseX X position in simulation coordinates
-	 * @param mouseY Y position in simulation coordinates
-	 * @param radius Brush radius
-	 * @param mouseOverUI If true, do not draw the outline
-	 */
-	static void drawCircle(int x, int y, uint8_t radius, SDL_Color color = {255, 255, 255, 255});
-
-	/**
-	 * @brief Draw a rectangle in screen (window) space with a given thickness.
-	 * @param x Top-left X in simulation coordinates
-	 * @param y Top-left Y in simulation coordinates
-	 * @param width Width in simulation coordinates
-	 * @param height Height in simulation coordinates
-	 * @param thickness Border thickness in pixels
-	 */
-	static void drawRectangle(int x, int y, int width, int height, int thickness, SDL_Color color = {255, 255, 255, 255});
+  static void setViewportResolution();
 
 	/**
 	 * @brief Render the simulation scene, UI, and debug overlays.
 	 * @param matrix CellularMatrix to render
 	 * @param showDebug Whether to show the debug overlay
 	 */
-	static void renderScene(Matrix& matrix, SimulationTexture& simulation_texture);
+	static void renderMatrixThroughViewport(Matrix& matrix);
 
-	/**
-	 * @brief Get the underlying SDL_Renderer pointer.
-	 */
-	static SDL_Renderer* getRenderer();
+  static void queueRectangleToWindow(
+    const int x, const int y,
+    const int width, const int height,
+    const int thickness,
+    const SDL_Color& color
+  );  
 
-	/**
-	 * @brief Cleanup and destroy all SDL resources and UI overlays.
-	 */
-	static void cleanup();
+  static void queueRectangleToViewport(
+    const int x, const int y,
+    const int width, const int height,
+    const int thickness,
+    const SDL_Color& color
+  );
 
-	/**
-	 * @brief Convert window (screen) coordinates to simulation (render) coordinates.
-	 * @param winX Window X
-	 * @param winY Window Y
-	 * @return Pair of (renderX, renderY)
-	 */
-	static std::pair<int, int> windowToRenderCoords(int winX, int winY);
+  static void queueCircleToWindow(
+    const int x, const int y,
+    const int radius,
+    const SDL_Color& color
+  );
 
-	/**
-	 * @brief Convert simulation (render) coordinates to window (screen) coordinates.
-	 * @param renderX Simulation X
-	 * @param renderY Simulation Y
-	 * @return Pair of (winX, winY)
-	 */
-	static std::pair<int, int> renderToWindowCoords(int renderX, int renderY);
+  static void queueCircleToViewport(
+    const int x, const int y,
+    const int radius,
+    const SDL_Color& color
+  );
+
+  // Converts window (screen) coordinates to viewport (texture) coordinates
+  static std::pair<int, int> windowToViewportCoords(int winX, int winY);
+
+  // Converts viewport (texture) coordinates to simulation coordinates
+  static std::pair<int, int> viewportToSimulationCoords(int vpX, int vpY);
+
+  // Converts simulation coordinates to viewport (texture) coordinates
+  static std::pair<int, int> simulationToViewportCoords(int simX, int simY);
+
+  // Converts viewport (texture) coordinates to window (screen) coordinates
+  static std::pair<int, int> viewportToWindowCoords(int vpX, int vpY);
+
+  // Converts window (screen) coordinates to simulation coordinates (convenience)
+  static std::pair<int, int> windowToSimulationCoords(int winX, int winY);
+
+  // Converts simulation coordinates to window (screen) coordinates (convenience)
+  static std::pair<int, int> simulationToWindowCoords(int simX, int simY);
 
 private:
-	/**
-	 * @brief Draw all queued screen-space rectangles (used for overlays).
-	 */
-	static void drawQueuedRectangles();
-
-	/**
-	 * @brief Draw all queued brush outlines (used for overlays).
-	 */
-	static void drawQueuedCircles();
-
 	// SDL window and renderer
 	static SDL_Window* sp_window;
 	static SDL_Renderer* sp_renderer;
 
 	// Struct for queued screen-space rectangles
-	struct ScreenRect {
-		int x, y, w, h, thickness;
+	struct QueuedRectangle {
+		int x, y;
+    int width, height;
+    int thickness;
 		SDL_Color color;
 	};
-	static std::vector<ScreenRect> s_queued_rects;
 
 	// Struct for queued brush outlines
 	struct QueuedCircle {
 		int x, y;
-		uint8_t radius;
+		int radius;
 		SDL_Color color;
 	};
-	static std::vector<QueuedCircle> s_queued_brush_outlines;
 
-  static bool s_is_window_resolution;
+	static std::vector<QueuedRectangle> s_queued_window_rectangles;
+  static std::vector<QueuedRectangle> s_queued_viewport_rectangles;
+	static std::vector<QueuedCircle> s_queued_window_circles;
+  static std::vector<QueuedCircle> s_queued_viewport_circles;
+
+	/**
+	 * @brief Draw all queued screen-space rectangles (used for overlays).
+	 */
+	static void drawQueuedRectangles();
+  static void drawRectangle(const QueuedRectangle& rect);
+	/**
+	 * @brief Draw all queued brush outlines (used for overlays).
+	 */
+	static void drawQueuedCircles();
+  static void drawCircle(const QueuedCircle& circle);
+
+  enum ResolutionType {
+    WINDOW,
+    SIMULATION,
+    VIEWPORT
+  };
+  static ResolutionType s_current_resolution;  
 };
 
 #endif // RENDERER_HPP

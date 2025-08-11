@@ -25,7 +25,7 @@
 #include "falling-sand-sim/elements/ElementFactory.hpp"
 #include "falling-sand-sim/elements/ElementTypes.hpp"
 #include "falling-sand-sim/renderer/Renderer.hpp"
-#include "falling-sand-sim/renderer/DisplayTexture.hpp"
+#include "falling-sand-sim/renderer/Viewport.hpp"
 #include "falling-sand-sim/renderer/SystemStatsDisplay.hpp"
 #include "falling-sand-sim/world/Matrix.hpp"
 
@@ -57,10 +57,10 @@ int main() {
   //-------------------------------------------
 
   // Initialize SDL2
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-			std::cerr << "SDL init failed: " << SDL_GetError() << '\n';
-			return false;
-	}
+  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    std::cerr << "SDL init failed: " << SDL_GetError() << '\n';
+    return false;
+  }
   // Initialize Input Handling
   Input::initialize();
   // Initialize Elements
@@ -72,9 +72,8 @@ int main() {
     std::cerr << "Renderer init failed\n";
     return -1;
   }
-  // Initialize the Texture (Display)
-  SimulationTexture *simulation_texture = new SimulationTexture();
-  simulation_texture->initializeTexture(Renderer::getRenderer());
+  // Initialize the Viewport
+  Viewport::initialize(Renderer::getRenderer());
 
   //-------------------------------------------
   // Simulation State Variables
@@ -83,21 +82,19 @@ int main() {
   bool running = true;
   bool paused = false;
 
-  uint8_t brush_size = 3;
+  int brush_size = 3;
   int simulation_mouse_x;
   int simulation_mouse_y;
 
   bool show_stats = false;
   bool debug_mode = false;
-  
-  float lag = 0;
 
-  float zoom = 1.0f;
+  float lag = 0;
 
   #ifdef DEBUG_MODE
     show_stats = true;
     debug_mode = true;
-    simulation_texture->toggleShowChunks();
+    matrix->toggleShowChunks();
     matrix->toggleDebugMode();
   #endif
 
@@ -126,7 +123,7 @@ int main() {
         if (event.type == SDL_QUIT) running = false;
         Input::handleSDLEvent(event);
       }
-      
+
       if (Input::getKeyDown("ESCAPE")) {
         paused = !paused;
       }
@@ -134,26 +131,50 @@ int main() {
         show_stats = !show_stats;
       }
       if (Input::getKeyDown("F2")) {
-        simulation_texture->toggleShowChunks();
+        matrix->toggleShowChunks();
       }
       if (Input::getKeyDown("F3")) {
         debug_mode = !debug_mode;
         matrix->toggleDebugMode();
       }
+      
+      int speed = 1;
+      if (Input::getKey("LSHIFT")) speed = 10;
+
+      if (Input::getKeyDown("W") || Input::getKey("W", 10, 1)) {
+        Viewport::addToPosition(0, -speed);
+      }
+      if (Input::getKeyDown("A") || Input::getKey("A", 10, 1)) {
+        Viewport::addToPosition(-speed, 0);
+      }
+      if (Input::getKeyDown("S") || Input::getKey("S", 10, 1)) {
+        Viewport::addToPosition(0, speed);
+      }
+      if (Input::getKeyDown("D") || Input::getKey("D", 10, 1)) {
+        Viewport::addToPosition(speed, 0);
+      }
+
+      if (Input::getKeyDown("E") || Input::getKey("E", 10, 1)) {
+        Viewport::setZoomLevel(Viewport::getZoom() - 1);
+      }
+      if (Input::getKeyDown("Q") || Input::getKey("Q", 10, 1)) {
+        Viewport::setZoomLevel(Viewport::getZoom() + 1);
+      }
 
       // For simulation/brush, still use simulation coordinates
       int mouse_x = Input::getMouseX();
       int mouse_y = Input::getMouseY();
-      simulation_mouse_x = mouse_x / zoom * Simulation::WIDTH / Window::WIDTH;
-      simulation_mouse_y = mouse_y / zoom * Simulation::HEIGHT / Window::HEIGHT;   
+      auto [viewport_mouse_x, viewport_mouse_y] = Renderer::windowToViewportCoords(mouse_x, mouse_y);
+      simulation_mouse_x = viewport_mouse_x + Viewport::getPositionX();
+      simulation_mouse_y = viewport_mouse_y + Viewport::getPositionY();
 
       if (Input::getScrollDelta() > 0) {
         brush_size = std::min(brush_size + 1, 50);
       }
       else if (Input::getScrollDelta() < 0) {
         brush_size = std::max(brush_size - 1, 1);
-      }   
-        
+      }
+
       if (Input::getMouse("LEFT")) {
         matrix->placeElementsInArea(SAND, simulation_mouse_x, simulation_mouse_y, brush_size);
       }
@@ -175,7 +196,7 @@ int main() {
           matrix->updateCellByCell(Simulation::WIDTH * Simulation::HEIGHT);
         }
       }
- 
+
       //-------------------------------------------
       // Update Matrix
       //-------------------------------------------     
@@ -185,8 +206,8 @@ int main() {
       // Render
       //-------------------------------------------
       SystemStatsDisplay::incrementTickCount();
-      Renderer::drawCircle(simulation_mouse_x, simulation_mouse_y, brush_size);
-      Renderer::renderScene(*matrix, *simulation_texture);
+      Renderer::queueCircleToViewport(viewport_mouse_x, viewport_mouse_y, brush_size, {255, 255, 255, 255});
+      Renderer::renderMatrixThroughViewport(*matrix);
       Renderer::present();
 
       //-------------------------------------------
@@ -194,7 +215,7 @@ int main() {
       //-------------------------------------------     
       lag -= Simulation::MS_PER_UPDATE;
     }
-    
+
     // Increment frame count for stats
     SystemStatsDisplay::incrementFrameCount();
     SystemStatsDisplay::update(frame_start, show_stats);

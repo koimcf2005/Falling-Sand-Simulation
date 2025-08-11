@@ -1,4 +1,4 @@
-// DisplayTexture.hpp
+// Viewport.hpp
 // Copyright (C) 2025 Koi McFarland
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,31 +16,44 @@
 //
 // Author: koimcf168@gmail.com
 //
-// Declares the SimulationTexture class for managing the simulation's display
+// Declares the Viewport class for managing the simulation's display
 // texture and chunk overlays.
 
-#ifndef DISPLAY_TEXTURE_HPP
-#define DISPLAY_TEXTURE_HPP
+#ifndef VIEWPORT_HPP
+#define VIEWPORT_HPP
 
 #include "falling-sand-sim/world/Matrix.hpp"
 
 #include <SDL2/SDL.h>
 
-class SimulationTexture {
+class Viewport {
 public:
-  SDL_Texture* getTexture() const;
-  void initializeTexture(SDL_Renderer* renderer);
-  void updateTexture(const Matrix& matrix);
+  static SDL_Texture* getTexture();
+  static void initialize(SDL_Renderer* renderer);
+  static void updateTexture(const Matrix& matrix);
 
-  void toggleShowChunks();
+  static void addToPosition(const int delta_x, const int delta_y);
+  static void setZoomLevel(int zoom);
+  
+  static int getWidth();
+  static int getHeight();
+
+  static int getPositionX();
+  static int getPositionY();
+
+  static int getZoom();
 
 private:
-  SDL_Texture* m_simulation_texture;
-    
-  bool m_show_chunks;
+  static SDL_Texture* s_simulation_texture;
 
-  bool m_debug_mode;
+  static int s_zoom;
+
+  static int s_width;
+  static int s_height;
+
+  static int s_position_x;
+  static int s_position_y;
 
 };
 
-#endif // DISPLAY_TEXTURE_HPP
+#endif // VIEWPORT_HPP

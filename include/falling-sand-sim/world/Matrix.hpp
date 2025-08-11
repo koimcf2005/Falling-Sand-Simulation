@@ -65,6 +65,7 @@ public:
   // Rendering and Debug 
   //-------------------------------------------
 	void toggleDebugMode();
+  void toggleShowChunks();
 	
 	//-------------------------------------------
   // Global Static Step
@@ -133,6 +134,7 @@ private:
 	std::array<Chunk, Chunks::CHUNKS_X * Chunks::CHUNKS_Y> m_chunks;
 
 	bool m_debug_mode;
+  bool m_show_chunks;
 
 	//-------------------------------------------
 	// Static Variables

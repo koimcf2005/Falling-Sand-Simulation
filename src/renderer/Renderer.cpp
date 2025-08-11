@@ -23,6 +23,7 @@
 
 #include "falling-sand-sim/renderer/SystemStatsDisplay.hpp"
 
+#include <fmt/core.h>
 #include <iostream>
 
 //------------------------------------------------------------------------------
@@ -30,9 +31,11 @@
 //------------------------------------------------------------------------------
 SDL_Window* Renderer::sp_window = nullptr;
 SDL_Renderer* Renderer::sp_renderer = nullptr;
-std::vector<Renderer::ScreenRect> Renderer::s_queued_rects;
-std::vector<Renderer::QueuedCircle> Renderer::s_queued_brush_outlines;
-bool Renderer::s_is_window_resolution = true;
+std::vector<Renderer::QueuedRectangle> Renderer::s_queued_window_rectangles;
+std::vector<Renderer::QueuedRectangle> Renderer::s_queued_viewport_rectangles;
+std::vector<Renderer::QueuedCircle> Renderer::s_queued_window_circles;
+std::vector<Renderer::QueuedCircle> Renderer::s_queued_viewport_circles;
+Renderer::ResolutionType Renderer::s_current_resolution = WINDOW;
 
 //------------------------------------------------------------------------------
 // Initialization
@@ -42,7 +45,6 @@ bool Renderer::initialize(const char* title) {
   //------------------------------------------------------------------------------
   // SDL2 Rendering Initialization
   //------------------------------------------------------------------------------
-
 
 	if (IMG_Init(IMG_INIT_PNG) == 0) {
 			std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
@@ -60,7 +62,7 @@ bool Renderer::initialize(const char* title) {
 			SDL_WINDOWPOS_CENTERED, 
 			Window::WIDTH, 
 			Window::HEIGHT, 
-			SDL_WINDOW_SHOWN
+			SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
 	);
 
 	if (!sp_window) {
@@ -107,134 +109,276 @@ void Renderer::present() {
 
 void Renderer::setSimulationResolution() {
 	// Set logical rendering size to simulation grid size
-  if (s_is_window_resolution) {
+  if (!s_current_resolution == SIMULATION) {
     SDL_RenderSetLogicalSize(sp_renderer, Simulation::WIDTH, Simulation::HEIGHT);
-    s_is_window_resolution = false;
+    s_current_resolution = SIMULATION; 
   }
 }
 
 void Renderer::setWindowResolution() {
 	// Reset logical rendering size to window size (full resolution)
-  if (!s_is_window_resolution) {
+  if (!s_current_resolution == WINDOW) {
     SDL_RenderSetLogicalSize(sp_renderer, 0, 0);
-    s_is_window_resolution = true;
+    s_current_resolution = WINDOW;
   }
 }
 
-void Renderer::renderScene(Matrix& matrix, SimulationTexture& simulation_texture) { 
+void Renderer::setViewportResolution() {
+  SDL_RenderSetLogicalSize(sp_renderer, Viewport::getWidth(), Viewport::getHeight());
+  s_current_resolution = VIEWPORT;
+}
+
+void Renderer::renderMatrixThroughViewport(Matrix& matrix) { 
 	// Render the simulation scene, UI, and debug overlays
 	clear();
 
-  setSimulationResolution();
-
 	// Draw low-res game world
-	simulation_texture.updateTexture(matrix);
-	drawTexture(simulation_texture.getTexture());
+	Viewport::updateTexture(matrix);
+	
+  // Get window and simulation sizes
+  int winW, winH;
+  SDL_GetRendererOutputSize(sp_renderer, &winW, &winH);
+
+  // Use the actual viewport/simulation size
+  int simW = Viewport::getWidth();
+  int simH = Viewport::getHeight();
+
+  // Calculate aspect ratios
+  float winAspect = static_cast<float>(winW) / winH;
+  float simAspect = static_cast<float>(simW) / simH;
+
+  SDL_Rect dst;
+  if (winAspect > simAspect) {
+      // Window is wider than simulation: pillarbox
+      dst.h = winH;
+      dst.w = static_cast<int>(simAspect * winH);
+      dst.x = (winW - dst.w) / 2;
+      dst.y = 0;
+  } else {
+      // Window is taller than simulation: letterbox
+      dst.w = winW;
+      dst.h = static_cast<int>(winW / simAspect);
+      dst.x = 0;
+      dst.y = (winH - dst.h) / 2;
+  }
+
+  SDL_RenderCopy(sp_renderer, Viewport::getTexture(), nullptr, &dst);
+  
+	drawQueuedRectangles();
   
   drawQueuedCircles();
 
-	// Switch to full-res and render overlays
-	setWindowResolution();  
-
 	SystemStatsDisplay::render();
-  
-	drawQueuedRectangles();
 }
 
-void Renderer::drawTexture(SDL_Texture* texture) {
-	// Draw a texture to the renderer
-	SDL_RenderCopy(sp_renderer, texture, nullptr, nullptr);
+void Renderer::queueRectangleToWindow(
+  const int x, const int y,
+  const int width, const int height,
+  const int thickness,
+  const SDL_Color& color
+) {
+  s_queued_window_rectangles.push_back({
+    x, y,
+    width, height,
+    thickness,
+    color
+  }); 
+}  
+
+void Renderer::queueRectangleToViewport(
+  const int x, const int y,
+  const int width, const int height,
+  const int thickness,
+  const SDL_Color& color
+) {
+  s_queued_viewport_rectangles.push_back({
+    x, y,
+    width, height,
+    thickness,
+    color
+  });
 }
 
-//------------------------------------------------------------------------------
-// Drawing Utilities
-//------------------------------------------------------------------------------
-
-void Renderer::drawCircle(int x, int y, uint8_t radius, SDL_Color color) {
-	// Queue a circular outline for the brush if not over UI and within bounds
-	if (x < 0 || x >= Simulation::WIDTH || y < 0 || y >= Simulation::HEIGHT) return;
-	s_queued_brush_outlines.push_back({x, y, radius, color});
+void Renderer::queueCircleToWindow(
+  const int x, const int y,
+  const int radius,
+  const SDL_Color& color
+) {
+  s_queued_window_circles.push_back({
+    x, y,
+    radius,
+    color
+  });
 }
 
-void Renderer::drawQueuedCircles() {
-	// Draw all queued brush outlines (used for overlays)
-	for (const auto& circle : s_queued_brush_outlines) {
-    SDL_SetRenderDrawColor(sp_renderer, circle.color.r, circle.color.g, circle.color.b, circle.color.a);
-		const int diameter = circle.radius * 2;
-    const int center_x = circle.x;
-    const int center_y = circle.y;
-    int x = circle.radius - 1, y = 0;
-    int tx = 1, ty = 1;
-    int err = tx - diameter;
-    while (x >= y) {
-      SDL_RenderDrawPoint(sp_renderer, center_x + x, center_y - y);
-      SDL_RenderDrawPoint(sp_renderer, center_x + x, center_y + y);
-      SDL_RenderDrawPoint(sp_renderer, center_x - x, center_y - y);
-      SDL_RenderDrawPoint(sp_renderer, center_x - x, center_y + y);
-      SDL_RenderDrawPoint(sp_renderer, center_x + y, center_y - x);
-      SDL_RenderDrawPoint(sp_renderer, center_x + y, center_y + x);
-      SDL_RenderDrawPoint(sp_renderer, center_x - y, center_y - x);
-      SDL_RenderDrawPoint(sp_renderer, center_x - y, center_y + x);
-
-      if (err <= 0) {
-        y++;
-        err += ty;
-        ty += 2;
-      }
-      if (err > 0) {
-        x--;
-        tx += 2;
-        err += tx - diameter;
-      }
-    }
-	}
-	s_queued_brush_outlines.clear();
-}
-
-void Renderer::drawRectangle(int x, int y, int width, int height, int thickness, SDL_Color color) {
-	// Queue a rectangle in screen (window) space for drawing
-	auto [winX, winY] = renderToWindowCoords(x, y);
-	auto [winX2, winY2] = renderToWindowCoords(x + width, y + height);
-
-	int screenWidth = winX2 - winX;
-	int screenHeight = winY2 - winY;
-
-	s_queued_rects.push_back({ winX, winY, screenWidth, screenHeight, thickness, color});
+void Renderer::queueCircleToViewport(
+  const int x, const int y,
+  const int radius,
+  const SDL_Color& color
+) {
+  s_queued_viewport_circles.push_back({
+    x, y,
+    radius,
+    color
+  });
 }
 
 void Renderer::drawQueuedRectangles() {
-	// Draw all queued screen-space rectangles (used for overlays)
-	for (const auto& rect : s_queued_rects) {
-		SDL_SetRenderDrawColor(sp_renderer, rect.color.r, rect.color.g, rect.color.b, rect.color.a);
-		SDL_Rect top    = { rect.x, rect.y, rect.w, rect.thickness };
-		SDL_Rect bottom = { rect.x, rect.y + rect.h - rect.thickness, rect.w, rect.thickness };
-		SDL_Rect left   = { rect.x, rect.y, rect.thickness, rect.h };
-		SDL_Rect right  = { rect.x + rect.w - rect.thickness, rect.y, rect.thickness, rect.h };
-
-		SDL_RenderFillRect(sp_renderer, &top);
-		SDL_RenderFillRect(sp_renderer, &bottom);
-		SDL_RenderFillRect(sp_renderer, &left);
-		SDL_RenderFillRect(sp_renderer, &right);
-	}
-
-	s_queued_rects.clear();
+  setViewportResolution();
+  for (const auto& rect : s_queued_viewport_rectangles) {
+    drawRectangle(rect);  
+  }
+  setWindowResolution();
+  for (const auto& rect : s_queued_window_rectangles) {
+    drawRectangle(rect);
+  }
+  s_queued_window_rectangles.clear();
+  s_queued_viewport_rectangles.clear();
 }
 
-//------------------------------------------------------------------------------
-// Coordinate Conversion
-//------------------------------------------------------------------------------
-std::pair<int, int> Renderer::windowToRenderCoords(int winX, int winY) {
-	// Convert window (screen) coordinates to simulation (render) coordinates
-	int renderX = winX * Simulation::WIDTH / Window::WIDTH;
-	int renderY = winY * Simulation::HEIGHT / Window::HEIGHT;
-	return { renderX, renderY };
+void Renderer::drawRectangle(const QueuedRectangle& rect) {
+  SDL_SetRenderDrawColor(sp_renderer, rect.color.r, rect.color.g, rect.color.b, rect.color.a);
+  SDL_Rect top    = { rect.x, rect.y, rect.width, rect.thickness };
+  SDL_Rect bottom = { rect.x, rect.y + rect.height - rect.thickness, rect.width, rect.thickness };
+  SDL_Rect left   = { rect.x, rect.y, rect.thickness, rect.height };
+  SDL_Rect right  = { rect.x + rect.width - rect.thickness, rect.y, rect.thickness, rect.height };
+
+  SDL_RenderFillRect(sp_renderer, &top);
+  SDL_RenderFillRect(sp_renderer, &bottom);
+  SDL_RenderFillRect(sp_renderer, &left);
+  SDL_RenderFillRect(sp_renderer, &right); 
 }
 
-std::pair<int, int> Renderer::renderToWindowCoords(int renderX, int renderY) {
-	// Convert simulation (render) coordinates to window (screen) coordinates
-	int winX = renderX * Window::WIDTH / Simulation::WIDTH;
-	int winY = renderY * Window::HEIGHT / Simulation::HEIGHT;
-	return { winX, winY };
+void Renderer::drawQueuedCircles() {
+  setViewportResolution();
+  for (const auto& circle : s_queued_viewport_circles) {
+    drawCircle(circle);  
+  }
+  setWindowResolution();
+  for (const auto& circle : s_queued_window_circles) {
+    drawCircle(circle);
+  }
+  s_queued_window_circles.clear();
+  s_queued_viewport_circles.clear();
+}
+
+void Renderer::drawCircle(const QueuedCircle& circle) {
+  SDL_SetRenderDrawColor(sp_renderer, circle.color.r, circle.color.g, circle.color.b, circle.color.a);
+  
+  const int diameter = circle.radius * 2;
+  const int center_x = circle.x;
+  const int center_y = circle.y;
+  int x = circle.radius - 1, y = 0;
+  int tx = 1, ty = 1;
+  int err = tx - diameter;
+
+  while (x >= y) {
+    SDL_RenderDrawPoint(sp_renderer, center_x + x, center_y - y);
+    SDL_RenderDrawPoint(sp_renderer, center_x + x, center_y + y);
+    SDL_RenderDrawPoint(sp_renderer, center_x - x, center_y - y);
+    SDL_RenderDrawPoint(sp_renderer, center_x - x, center_y + y);
+    SDL_RenderDrawPoint(sp_renderer, center_x + y, center_y - x);
+    SDL_RenderDrawPoint(sp_renderer, center_x + y, center_y + x);
+    SDL_RenderDrawPoint(sp_renderer, center_x - y, center_y - x);
+    SDL_RenderDrawPoint(sp_renderer, center_x - y, center_y + x);
+
+    if (err <= 0) {
+      y++;
+      err += ty;
+      ty += 2;
+    }
+    if (err > 0) {
+      x--;
+      tx += 2;
+      err += tx - diameter;
+    }
+  }
+}
+
+std::pair<int, int> Renderer::windowToViewportCoords(int winX, int winY) {
+    int winW, winH;
+    SDL_GetRendererOutputSize(sp_renderer, &winW, &winH);
+
+    int vpW = Viewport::getWidth();
+    int vpH = Viewport::getHeight();
+
+    float vpAspect = static_cast<float>(vpW) / vpH;
+    float winAspect = static_cast<float>(winW) / winH;
+
+    int dst_x, dst_y, dst_w, dst_h;
+    if (winAspect > vpAspect) {
+        dst_h = winH;
+        dst_w = static_cast<int>(vpAspect * winH);
+        dst_x = (winW - dst_w) / 2;
+        dst_y = 0;
+    } else {
+        dst_w = winW;
+        dst_h = static_cast<int>(winW / vpAspect);
+        dst_x = 0;
+        dst_y = (winH - dst_h) / 2;
+    }
+
+    // If outside viewport, return -1
+    if (winX < dst_x || winX >= dst_x + dst_w || winY < dst_y || winY >= dst_y + dst_h)
+        return {-1, -1};
+
+    float norm_x = (winX - dst_x) / static_cast<float>(dst_w);
+    float norm_y = (winY - dst_y) / static_cast<float>(dst_h);
+
+    int vpX = static_cast<int>(norm_x * vpW);
+    int vpY = static_cast<int>(norm_y * vpH);
+    return {vpX, vpY};
+}
+
+std::pair<int, int> Renderer::viewportToSimulationCoords(int vpX, int vpY) {
+    int simX = Viewport::getPositionX() + vpX;
+    int simY = Viewport::getPositionY() + vpY;
+    return {simX, simY};
+}
+
+std::pair<int, int> Renderer::simulationToViewportCoords(int simX, int simY) {
+    int vpX = simX - Viewport::getPositionX();
+    int vpY = simY - Viewport::getPositionY();
+    return {vpX, vpY};
+}
+
+std::pair<int, int> Renderer::viewportToWindowCoords(int vpX, int vpY) {
+    int winW, winH;
+    SDL_GetRendererOutputSize(sp_renderer, &winW, &winH);
+
+    int vpW = Viewport::getWidth();
+    int vpH = Viewport::getHeight();
+
+    float vpAspect = static_cast<float>(vpW) / vpH;
+    float winAspect = static_cast<float>(winW) / winH;
+
+    int dst_x, dst_y, dst_w, dst_h;
+    if (winAspect > vpAspect) {
+        dst_h = winH;
+        dst_w = static_cast<int>(vpAspect * winH);
+        dst_x = (winW - dst_w) / 2;
+        dst_y = 0;
+    } else {
+        dst_w = winW;
+        dst_h = static_cast<int>(winW / vpAspect);
+        dst_x = 0;
+        dst_y = (winH - dst_h) / 2;
+    }
+
+    int winX = dst_x + static_cast<int>((vpX / static_cast<float>(vpW)) * dst_w);
+    int winY = dst_y + static_cast<int>((vpY / static_cast<float>(vpH)) * dst_h);
+    return {winX, winY};
+}
+
+std::pair<int, int> Renderer::windowToSimulationCoords(int winX, int winY) {
+    auto [vpX, vpY] = windowToViewportCoords(winX, winY);
+    if (vpX == -1 || vpY == -1) return {-1, -1};
+    return viewportToSimulationCoords(vpX, vpY);
+}
+
+std::pair<int, int> Renderer::simulationToWindowCoords(int simX, int simY) {
+    auto [vpX, vpY] = simulationToViewportCoords(simX, simY);
+    return viewportToWindowCoords(vpX, vpY);
 }
 
 //------------------------------------------------------------------------------

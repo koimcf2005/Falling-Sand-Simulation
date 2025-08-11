@@ -25,6 +25,7 @@
 #include "falling-sand-sim/elements/ElementFactory.hpp"
 #include "falling-sand-sim/renderer/Renderer.hpp"
 #include "falling-sand-sim/utils/Utilities.hpp"
+#include "falling-sand-sim/renderer/Viewport.hpp"
 
 #include <iostream>
 #include <vector>
@@ -79,6 +80,26 @@ void Matrix::update() {
   // Commit update rects before processing so new placements are processed immediately
   for (auto& chunk : m_chunks) {
     chunk.commitUpdateRect();
+    if (!m_show_chunks) continue;
+    auto [chunk_viewport_x, chunk_viewport_y] = Renderer::simulationToViewportCoords(chunk.getLeftX(), chunk.getTopY());
+    Renderer::queueRectangleToWindow(
+      chunk_viewport_x,
+      chunk_viewport_y,
+      Chunks::CHUNK_SIZE,
+      Chunks::CHUNK_SIZE,
+      1,
+      {0, 0, 255, 255}
+    );
+    const SDL_Rect& rect = chunk.getCurrentUpdateRect();
+    auto [rect_viewport_x, rect_viewport_y] = Renderer::simulationToViewportCoords(rect.x, rect.y);
+    Renderer::queueRectangleToWindow(
+      rect_viewport_x,
+      rect_viewport_y,
+      rect.w,
+      rect.h,
+      1,
+      {255, 0, 0, 255}
+    );
   }
 
   for (auto chunk_iter = m_chunks.rbegin(); chunk_iter != m_chunks.rend(); ++chunk_iter) {
@@ -280,6 +301,8 @@ void Matrix::toggleDebugMode() {
     s_debug_index = Simulation::WIDTH * Simulation::HEIGHT - 1;
   }
 }
+
+void Matrix::toggleShowChunks() { m_show_chunks = ! m_show_chunks; }
 
 //-------------------------------------------
 // Global Static Step
